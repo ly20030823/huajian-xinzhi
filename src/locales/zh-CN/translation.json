@@ -1,0 +1,571 @@
+{
+  "about": {
+    "closeTitle": "关闭关于",
+    "contributors": "贡献者",
+    "feedback": "反馈问题",
+    "github": "GitHub",
+    "license": "许可证",
+    "productName": "花笺",
+    "summary": "轻量、优雅、现代化的本地便签工具",
+    "tipPrefix": "您知道吗：",
+    "title": "关于",
+    "version": "版本：v{{version}}"
+  },
+  "common": {
+    "back": "返回",
+    "blankNote": "空白笔记",
+    "cancel": "取消",
+    "default": "默认",
+    "delete": "删除",
+    "externalFileCount": "{{count}} 个外部文件",
+    "noteCount": "{{count}} 篇笔记",
+    "operationFailed": "操作失败",
+    "reset": "恢复默认",
+    "save": "保存",
+    "untitledNote": "无标题笔记",
+    "untitledFile": "未命名文件",
+    "wordCount": "{{count}} 字",
+    "wordCountUnit": "字"
+  },
+  "contextMenu": {
+    "edit": {
+      "copy": "复制",
+      "cut": "剪切",
+      "paste": "粘贴",
+      "selectAll": "全选"
+    },
+    "table": {
+      "alignmentScope": "选择对齐范围",
+      "autoFit": "自适应表格大小",
+      "currentColumn": "当前列",
+      "deleteColumn": "删除当前列",
+      "deleteRow": "删除当前行",
+      "deleteTable": "删除表格",
+      "insertColumnLeft": "在左侧插入一列",
+      "insertColumnRight": "在右侧插入一列",
+      "insertRowAbove": "在上方插入一行",
+      "insertRowBelow": "在下方插入一行",
+      "wholeTable": "整个表格"
+    },
+    "tile": {
+      "close": "取消钉屏",
+      "copy": "复制",
+      "save": "保存",
+      "switchToPad": "转为小窗"
+    }
+  },
+  "errors": {
+    "categoryAlreadyExists": "分类「{{category}}」已存在",
+    "categoryNameEmpty": "分类名不能为空",
+    "categoryNameInvalidChars": "分类名不能包含特殊字符",
+    "categoryNotFound": "分类「{{category}}」不存在",
+    "desktopConfig": "桌面配置更新失败",
+    "duplicateShortcut": "显示/隐藏窗口快捷键不能与呼出小窗快捷键重复",
+    "imagePasteFailed": "图片粘贴失败",
+    "imageTooLarge": "图片文件过大（上限 20 MB）",
+    "noPool": "便签窗口池尚未初始化",
+    "noteNotFound": "找不到该笔记",
+    "unsupportedFile": "只支持导入 .md 文件",
+    "unsupportedImageFormat": "不支持的图片格式",
+    "unsupportedShortcut": "{{field}} 配置无效",
+    "unsupportedShortcutGeneric": "快捷键配置无效"
+  },
+  "markdown": {
+    "copied": "已复制",
+    "copy": "复制",
+    "codeBlock": {
+      "delete": "删除代码块",
+      "language": "代码语言",
+      "noLanguage": "没有匹配的语言",
+      "searchLanguage": "搜索代码语言"
+    },
+    "emptyHint": "预览区会显示当前笔记内容",
+    "mermaid": {
+      "diagram": "Mermaid 流程图",
+      "editSource": "编辑源码",
+      "hideSource": "收起源码",
+      "invalid": "流程图语法暂时无法渲染",
+      "rendering": "正在绘制流程图…",
+      "source": "流程图源码",
+      "zoom": "流程图 {{percent}}%",
+      "zoomHint": "按住 Ctrl 并滚动滚轮可单独缩放流程图"
+    },
+    "alert": {
+      "note": "备注",
+      "tip": "提示",
+      "important": "重要",
+      "warning": "警告",
+      "caution": "注意"
+    }
+  },
+  "main": {
+    "category": {
+      "confirmDelete": "确认删除文件夹「{{category}}」？笔记会移到未分类。",
+      "confirmDeleteAction": "删除文件夹",
+      "delete": "删除文件夹",
+      "dragToReorder": "拖动调整文件夹顺序",
+      "dropToRemove": "把笔记拖到这里即可移出文件夹",
+      "emptyFolder": "空文件夹",
+      "markdownImported": "已导入 {{count}} 个 Markdown 文件",
+      "markdownOnly": "这里只接收 .md 或 .markdown 文件",
+      "markdownDropHint": "松开即可导入 Markdown",
+      "markdownDropDetail": "文件会放入当前文件夹",
+      "new": "新建文件夹",
+      "placeholder": "输入文件夹名…",
+      "rename": "重命名",
+      "uncategorized": "未放入文件夹"
+    },
+    "confirm": {
+      "reloadFromDisk": "当前有未保存的修改。从磁盘重新加载会放弃这些修改，是否继续？",
+      "unsavedExternalFile": "「{{title}}」有未保存的更改，是否保存到原文件？"
+    },
+    "editor": {
+      "confirmDelete": "确认删除？",
+      "contentLabel": "内容编辑",
+      "contentPlaceholder": "开始写作……",
+      "emptyHint": "选择或新建一篇笔记",
+      "pinToTile": "钉为磁贴",
+      "previewLabel": "预览",
+      "reloadFromDisk": "从磁盘重新加载",
+      "reloadedFromDisk": "已从磁盘重新加载",
+      "reloadMissing": "磁盘中的这篇笔记已不存在，已从列表移除",
+      "richEditorError": "内容编辑器暂时无法处理这段 Markdown",
+      "showSource": "显示 Markdown 源码",
+      "sourceLabel": "Markdown 源码",
+      "textZoom": "正文 {{percent}}%",
+      "undo": "撤销（Ctrl+Z）",
+      "undoLabel": "撤销",
+      "redo": "重做（Ctrl+Y）",
+      "redoLabel": "重做"
+    },
+    "externalFile": {
+      "label": "外部文件 · {{path}}"
+    },
+    "externalFiles": {
+      "remove": "从列表移除",
+      "title": "外部文件"
+    },
+    "formatSample": {
+      "boldText": "粗体文本",
+      "codeText": "代码",
+      "headingText": "标题",
+      "italicText": "斜体文本",
+      "listItem": "列表项",
+      "quoteText": "引用文本"
+    },
+    "search": {
+      "empty": "还没有笔记",
+      "noResults": "没有匹配的笔记"
+    },
+    "sidebar": {
+      "clearSearch": "清空搜索",
+      "importMarkdown": "导入 Markdown",
+      "importDocument": "导入文档",
+      "newFolder": "新建文件夹",
+      "newNote": "新建笔记",
+      "searchPlaceholder": "搜索笔记…"
+    },
+    "images": {
+      "cleanUnused": "清理未使用图片",
+      "cleaned": "已清理 {{count}} 张图片",
+      "cleanedNone": "没有需要清理的图片"
+    },
+    "statusBar": {
+      "byteSize": "{{size}} KB",
+      "encoding": "UTF-8",
+      "format": "Markdown + LaTeX",
+      "lineNumber": "Ln {{count}}",
+      "linePosition": "第 {{current}} / {{total}} 行",
+      "selectedCharacters": "已选 {{count}} 字",
+      "totalCharacters": "共 {{count}} 字",
+      "saveState": {
+        "dirty": "未保存",
+        "error": "保存失败",
+        "idle": "未选择",
+        "saved": "已保存",
+        "saving": "保存中"
+      }
+    },
+    "paperMargin": {
+      "title": "纸边栏",
+      "collapse": "收起纸边栏",
+      "expand": "展开纸边栏",
+      "today": "这一页",
+      "lines": "行",
+      "characters": "字",
+      "minutes": "分钟",
+      "outline": "文章脉络",
+      "noHeadings": "加一个标题，文章的脉络就会从这里长出来。",
+      "inspiration": "灵感签",
+      "nextPrompt": "换一签",
+      "footnote": "慢慢写，纸会记得。",
+      "prompts": {
+        "detail": "写下一个只有你注意到的小细节。",
+        "question": "如果把这一页变成一个问题，它会问什么？",
+        "reverse": "试着从结尾倒着讲一次。",
+        "small": "先写最小、最确定的那一句。",
+        "senses": "此刻的光线、声音和气味是什么？"
+      }
+    },
+    "writingPet": {
+      "name": "橘团",
+      "habitat": "橘团的小窗台",
+      "touch": "摸摸橘团",
+      "touchAndHide": "单击摸摸橘团，双击隐藏",
+      "hidden": "橘团先去休息了。双击标题右侧空白处可叫它回来。",
+      "restored": "橘团回来啦。",
+      "restore": "双击恢复橘猫",
+      "saving": "我帮你看着这句话。",
+      "saved": "收好啦，送你一朵小花。",
+      "error": "这页还没收好，再试一次？",
+      "messages": {
+        "hello": "喵。你写，我陪着。",
+        "listen": "我刚才好像听见了一个好句子。",
+        "line": "再写一行，就一行。",
+        "secret": "放心，我不会把草稿告诉别人。",
+        "rest": "肩膀放松一点，我替你看会儿纸。"
+      }
+    },
+    "toolbar": {
+      "blockMath": "块级公式",
+      "bold": "粗体",
+      "code": "代码",
+      "heading": "标题",
+      "hr": "分割线",
+      "inlineMath": "行内公式",
+      "italic": "斜体",
+      "ol": "有序列表",
+      "quote": "引用",
+      "ul": "无序列表"
+    },
+    "window": {
+      "close": "关闭",
+      "collapseSidebar": "收起侧栏",
+      "expandSidebar": "展开侧栏",
+      "maximize": "最大化",
+      "minimize": "最小化",
+      "about": "关于",
+      "externalNotepadUnsupported": "外部文件暂不支持快捷便签",
+      "manualSync": "立即同步到 GitHub",
+      "manualSyncChanged": "同步完成：上传 {{uploaded}}，下载 {{downloaded}}",
+      "manualSyncConflicts": "{{message}}；保留了 {{conflicts}} 个冲突副本",
+      "manualSyncDisabled": "请先在设置中启用 GitHub 同步",
+      "manualSyncFailed": "同步失败，点击重试",
+      "manualSyncing": "正在同步…",
+      "manualSyncSaveFailed": "当前笔记保存失败，未开始同步",
+      "manualSyncSuccess": "同步完成",
+      "manualSyncUnchanged": "同步完成，本地与 GitHub 已经一致",
+      "openCurrentAsNotepad": "将当前笔记打开为快捷便签",
+      "quickNotepad": "快捷便签",
+      "restore": "还原",
+      "selectNoteForNotepad": "请先选择一篇笔记",
+      "settings": "设置"
+    }
+  },
+  "noteMenu": {
+    "copyFilePath": "复制文件路径",
+    "delete": "删除笔记",
+    "export": "导出 Markdown",
+    "exportMarkdown": "导出为 Markdown",
+    "exportPdf": "导出为 PDF",
+    "filePathCopied": "文件路径已复制",
+    "pdfExported": "PDF 已保存",
+    "moveToCategory": "移动到文件夹…",
+    "openInFolder": "在文件夹中打开",
+    "openNotepad": "作为快捷便签打开",
+    "openOriginalWord": "打开原始 Word",
+    "revealOriginalWord": "显示原始 Word 所在位置",
+    "saveOriginalPdf": "另存 PDF 原件"
+  },
+  "notepad": {
+    "button": {
+      "clear": "清空",
+      "new": "新建便签"
+    },
+    "editLock": {
+      "editable": "可编辑",
+      "lockTitle": "锁定，防止误修改",
+      "readOnly": "只读",
+      "unlockTitle": "解锁后才能修改"
+    },
+    "emptyState": "还没有可打开的笔记",
+    "search": {
+      "clear": "清空搜索",
+      "noResults": "没有匹配的笔记",
+      "placeholder": "搜索笔记…"
+    },
+    "error": {
+      "copyUnsupported": "当前环境不支持复制"
+    },
+    "placeholder": {
+      "content": "写点什么……",
+      "title": "标题（可选）"
+    },
+    "status": {
+      "copied": "已复制",
+      "empty": "空",
+      "opened": "已打开",
+      "saveFailed": "保存失败",
+      "saved": "已保存",
+      "unsaved": "未保存"
+    },
+    "tab": {
+      "edit": "编辑",
+      "new": "新建",
+      "open": "打开"
+    },
+    "tooltip": {
+      "close": "关闭",
+      "closeTile": "关闭磁贴",
+      "openInEditor": "在编辑器中打开",
+      "pinToTile": "钉到桌面磁贴",
+      "returnToPad": "返回便签编辑"
+    }
+  },
+  "settings": {
+    "autoSave": {
+      "externalFile": "外部文件自动保存",
+      "note": "自动保存笔记",
+      "surface": "小窗笔记自动保存"
+    },
+    "autostart": "开机自启",
+    "closeTitle": "关闭设置",
+    "closeToTray": "关闭到托盘",
+    "defaultView": {
+      "edit": "编辑",
+      "hint": "内容编辑支持 Markdown 快捷输入，源码面板可以随时打开。",
+      "label": "默认视图",
+      "preview": "预览",
+      "showSource": "默认显示 Markdown 源码",
+      "split": "分栏"
+    },
+    "fontSize": {
+      "editor": "编辑器字号",
+      "surface": "小窗/磁贴字号"
+    },
+    "locale": {
+      "enUS": "English",
+      "label": "语言",
+      "zhCN": "简体中文",
+      "zhHK": "繁體中文"
+    },
+    "dataDir": "数据目录",
+    "dataDirHint": "所选文件夹就是工作区；Markdown 保持原位，只会新增 metadata.json 用于记录标题和顺序。",
+    "openAtCursor": "快捷键打开时跟随鼠标位置",
+    "quickNoteShortcut": "快捷记录快捷键",
+    "rememberSurfaceSize": "记住小窗尺寸",
+    "showWritingPet": "显示橘猫陪伴",
+    "showWritingPetHint": "双击橘猫可快速隐藏；隐藏后双击标题右侧空白处即可恢复。",
+    "tabIndentSize": "Tab 缩进宽度",
+    "selectFolder": "打开文件夹",
+    "openFolderConfirm": "将直接把「{{dir}}」设为当前工作文件夹并载入其中的 Markdown，只新增 metadata.json，不创建 notes 子文件夹。原工作文件夹会完整保留。是否继续？",
+    "openFolderSuccess": "工作文件夹已切换，共载入 {{count}} 篇 Markdown",
+    "shortcut": {
+      "cancelHint": "Esc 取消",
+      "clear": "清除",
+      "checkFailed": "快捷键检测失败",
+      "checking": "正在检测快捷键...",
+      "cleared": "快捷键已清空",
+      "clickToRecord": "点击录制",
+      "conflict": {
+        "current": "快捷键 {{shortcut}} 当前正在使用",
+        "invalid": "快捷键 {{shortcut}} 不受支持",
+        "none": "快捷键 {{shortcut}} 未检测到冲突",
+        "registered": "快捷键 {{shortcut}} 可能已被系统或其他应用占用",
+        "system": "快捷键 {{shortcut}} 与系统快捷键冲突",
+        "unknown": "检测完成，但释放临时快捷键失败"
+      },
+      "forQuickNote": "用于打开快捷记录小窗",
+      "needsModifier": "快捷键需要包含 Ctrl、Option/Alt 或 Command/Meta",
+      "notSet": "未设置",
+      "pressHint": "按下快捷键；按 Delete 清空。"
+    },
+    "theme": {
+      "dark": "深色",
+      "label": "主题",
+      "light": "浅色",
+      "system": "跟随系统",
+      "white": "纯白"
+    },
+    "tileColor": {
+      "custom": "自定义",
+      "followTheme": "跟随主题",
+      "label": "磁贴颜色"
+    },
+    "tileCtrlClose": "Ctrl+右键快速关闭磁贴",
+    "tileRenderMarkdown": "磁贴渲染 Markdown",
+    "tileDoubleClickToEdit": "双击磁贴进入编辑",
+    "tileSaveReturnsToPin": "保存后回到磁贴",
+    "renderHtmlMarkdown": "允许 HTML 标签渲染",
+    "splitScrollSync": "分栏同步滚动",
+    "title": "应用设置",
+    "update": {
+      "advanced": "高级",
+      "allowPrerelease": "允许预发布版本",
+      "autoCheck": "自动检查更新",
+      "autoDownload": "有新版本时自动下载",
+      "available": "发现新版本 {{version}}",
+      "busy": "处理中",
+      "cancel": "取消下载",
+      "cancelRequested": "已请求取消下载",
+      "cancelled": "下载已取消",
+      "cdkCleared": "CDK 已清除",
+      "cdkSaved": "CDK 已保存到系统安全存储",
+      "channel": {
+        "beta": "beta",
+        "stable": "stable"
+      },
+      "check": "检查更新",
+      "checking": "正在检查...",
+      "confirmClearCdk": "确认清除 Mirror酱 CDK？",
+      "currentVersion": "当前版本：{{version}}",
+      "error": {
+        "alreadyRunning": "已有更新任务正在运行",
+        "cancelUnavailable": "当前没有可取消的更新任务",
+        "cdkEmpty": "Mirror酱 CDK 不能为空",
+        "checkInterrupted": "上次检查更新被中断，已恢复为空闲状态",
+        "checkTaskJoinFailed": "检查更新任务执行失败",
+        "downloadAssetMismatch": "更新包信息与已检查结果不一致，请重新检查更新",
+        "downloadClientUnavailable": "下载客户端不可用，请稍后重试",
+        "downloadHashMismatch": "下载文件哈希校验失败",
+        "downloadHttpStatus": "下载请求失败，请稍后重试",
+        "downloadInterrupted": "上次下载被中断，请重新下载更新包",
+        "downloadManifestUnavailable": "当前阶段未配置 GitHub 更新清单，无法下载更新包",
+        "downloadManifestUnreadable": "无法读取 GitHub 更新清单",
+        "downloadNetwork": "下载过程中网络中断，请稍后重试",
+        "downloadNotReady": "当前没有可下载的更新包",
+        "downloadRedirectInvalid": "下载重定向地址无效",
+        "downloadRedirectLoop": "下载重定向次数过多，请稍后重试",
+        "downloadSizeMismatch": "下载文件大小校验失败",
+        "downloadSourceInvalid": "无效的下载源参数",
+        "downloadTaskJoinFailed": "下载任务执行失败",
+        "downloadTimeout": "下载请求超时，请稍后重试",
+        "downloadUrlInvalid": "下载地址无效或未使用 HTTPS",
+        "downloadUrlNotAllowed": "下载地址不在允许列表中",
+        "downloadVersionMismatch": "下载版本与已检查到的版本不一致，请重新检查更新",
+        "githubApi": "GitHub API 请求失败，请检查网络后重试",
+        "githubNoAssets": "GitHub Release 中没有找到可用资产",
+        "githubRateLimited": "GitHub API 频率限制，请稍后重试",
+        "helperNotFound": "找不到更新安装助手可执行文件",
+        "installAssetExtractFailed": "无法解包更新资源，请重新下载后重试",
+        "installAssetHashMismatch": "更新包哈希校验失败",
+        "installAssetMissing": "更新包文件不存在或无法读取",
+        "installAssetSizeMismatch": "更新包大小校验失败",
+        "installCleanupFailed": "安装后清理临时文件失败",
+        "installHelperFailed": "更新安装助手执行失败",
+        "installHelperHandshakeFailed": "更新安装助手未能在退出前完成就绪握手",
+        "installHelperInvalidArguments": "更新安装助手参数无效",
+        "installInstallerBusy": "另一个安装程序正在运行，请稍后重试",
+        "installInstallerCancelled": "更新安装已取消",
+        "installInstallerFailed": "更新安装程序执行失败",
+        "installInstallerFatal": "更新安装程序返回了致命错误",
+        "installInstallerTimedOut": "更新安装程序执行超时，请稍后重试",
+        "installInsufficientSpace": "磁盘剩余空间不足，无法继续安装更新",
+        "installInterrupted": "上次安装未完成，请重试安装",
+        "installLogWriteFailed": "无法写入安装日志",
+        "installNotReady": "当前没有可安装的更新包",
+        "installRelaunchFailed": "更新完成后重新启动应用失败，请手动重新打开应用",
+        "installReplaceFailed": "替换当前安装内容失败，请稍后重试",
+        "installSaveFailed": "安装前自动保存失败，请先处理当前未保存内容后重试",
+        "installSaveTimedOut": "等待窗口保存未保存内容超时，请稍后重试",
+        "installSpawnFailed": "启动更新安装助手失败",
+        "installStateWriteFailed": "无法写入安装状态文件",
+        "installTargetMissing": "当前安装目标不存在，无法继续",
+        "installTaskJoinFailed": "安装任务执行失败",
+        "installUnsupportedKind": "当前安装形态暂不支持应用内安装",
+        "installVersionMismatch": "安装后重新打开的仍是旧版本，请直接重试安装",
+        "installWaitTimedOut": "等待应用退出超时，请重试安装",
+        "manifestAppIdMismatch": "更新清单不属于当前应用",
+        "manifestAssetNotFound": "当前平台没有匹配的更新包",
+        "manifestInvalid": "更新清单格式无效",
+        "manifestMissingAssets": "更新清单未包含任何可下载资产",
+        "manifestUnsupportedSchema": "更新清单格式版本暂不受支持",
+        "mirrorChyanApi": "Mirror酱 API 请求失败，请检查网络后重试",
+        "mirrorChyanBusiness": "Mirror酱返回了业务错误，请稍后重试",
+        "mirrorChyanCdk": "Mirror酱 CDK 验证失败，请检查 CDK 是否正确",
+        "mirrorChyanCdkBlocked": "Mirror酱 CDK 已被封禁，请联系 Mirror酱客服处理",
+        "mirrorChyanCdkExpired": "Mirror酱 CDK 已过期，请续费或更换",
+        "mirrorChyanCdkInvalid": "Mirror酱 CDK 错误，请确认输入是否正确",
+        "mirrorChyanCdkMismatched": "Mirror酱 CDK 类型与本应用不匹配，请确认 CDK 对应的资源",
+        "mirrorChyanCdkQuotaExhausted": "Mirror酱 CDK 今日下载次数已达上限，请明日再试或升级套餐",
+        "mirrorChyanDownloadNeedCdk": "Mirror酱未返回下载链接，请配置有效的 CDK 后重试",
+        "mirrorChyanDownloadUnavailable": "Mirror 下载源尚未配置，当前阶段请改用 GitHub 下载",
+        "mirrorChyanInvalidArch": "Mirror酱不支持当前架构参数，请更新应用后重试",
+        "mirrorChyanInvalidChannel": "Mirror酱不支持当前更新通道参数，请更新应用后重试",
+        "mirrorChyanInvalidOs": "Mirror酱不支持当前操作系统参数，请更新应用后重试",
+        "mirrorChyanInvalidParams": "Mirror酱请求参数不正确，请更新应用后重试",
+        "mirrorChyanResourceNotFound": "Mirror酱暂无当前平台的资源，请改用 GitHub 下载",
+        "platformUnsupported": "当前平台或安装形态暂不支持应用内更新",
+        "portableManualOnly": "当前便携版仅支持手动下载更新包后覆盖升级",
+        "providerFixtureUnreadable": "无法读取本地更新测试清单",
+        "providerNotConfigured": "更新源尚未配置测试清单",
+        "secureStoreUnavailable": "系统安全存储暂不可用，请稍后重试",
+        "sourceNotConfigured": "更新源尚未配置，当前阶段仅支持本地测试清单注入",
+        "stateCorrupted": "更新状态文件已损坏，已重置",
+        "stateLockTimeout": "等待更新状态文件锁超时，请稍后重试",
+        "versionInvalid": "版本号格式无效"
+      },
+      "confirmInstall": "应用会先保存所有未保存内容，然后关闭、安装更新，并在完成后重新打开。是否继续？",
+      "download": "下载更新",
+      "downloaded": "版本 {{version}} 已下载完成",
+      "interval": {
+        "custom": "{{hours}} 小时",
+        "daily": "每天",
+        "label": "检查频率",
+        "weekly": "每周"
+      },
+      "install": "安装并重启",
+      "installFailed": "最近一次安装失败，可查看日志后重试或重新下载",
+      "installFailedTitle": "安装更新失败",
+      "installPreparing": "正在准备退出应用并安装更新...",
+      "installRetry": "重新尝试安装",
+      "installScheduled": "检测到旧版待安装状态，请重新点击“安装并重启”完成替换",
+      "installValidated": "即将退出应用并安装更新，完成后会自动重新打开",
+      "latestVersion": "待更新版本：{{version}}",
+      "loading": "正在读取更新设置...",
+      "mirrorChyan": {
+        "hideCdk": "隐藏 CDK",
+        "noCdkHint": "没有或者忘记 CDK？点击前往 ",
+        "noCdkHintSuffix": " 官网即刻获取。",
+        "placeholder": "点击输入文本",
+        "showCdk": "显示 CDK",
+        "title": "Mirror酱 CDK"
+      },
+      "notAvailable": "当前已是最新版本",
+      "saved": "更新设置已保存",
+      "settingsTitle": "更新设置",
+      "speed": "速度：{{speed}}",
+      "checkSource": {
+        "label": "检查更新源",
+        "github": "GitHub",
+        "mirrorChyan": "Mirror酱"
+      },
+      "source": {
+        "github": "GitHub",
+        "label": "下载源",
+        "mirrorChyan": "Mirror酱"
+      },
+      "title": "更新"
+    },
+    "visibilityShortcut": "显示/隐藏窗口快捷键",
+    "background": {
+      "label": "背景图片",
+      "default": "默认背景",
+      "choose": "选择",
+      "clear": "清除背景图片",
+      "dim": "遮罩",
+      "scale": "缩放",
+      "positionX": "横向",
+      "positionY": "纵向",
+      "blur": "模糊",
+      "fit": {
+        "cover": "填充",
+        "contain": "完整",
+        "repeat": "平铺"
+      }
+    }
+  },
+  "tile": {
+    "empty": "空"
+  }
+}

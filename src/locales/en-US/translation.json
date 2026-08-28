@@ -1,0 +1,571 @@
+{
+  "about": {
+    "closeTitle": "Close About",
+    "contributors": "Contributors",
+    "feedback": "Feedback",
+    "github": "GitHub",
+    "license": "License",
+    "productName": "花笺",
+    "summary": "A lightweight, elegant, modern local note-taking tool",
+    "tipPrefix": "Tip:",
+    "title": "About",
+    "version": "Version: v{{version}}"
+  },
+  "common": {
+    "back": "Back",
+    "blankNote": "Blank Note",
+    "cancel": "Cancel",
+    "default": "Default",
+    "delete": "Delete",
+    "externalFileCount": "{{count}} external file(s)",
+    "noteCount": "{{count}} note(s)",
+    "operationFailed": "Operation failed",
+    "reset": "Reset",
+    "save": "Save",
+    "untitledNote": "Untitled Note",
+    "untitledFile": "Untitled File",
+    "wordCount": "{{count}} characters",
+    "wordCountUnit": "characters"
+  },
+  "contextMenu": {
+    "edit": {
+      "copy": "Copy",
+      "cut": "Cut",
+      "paste": "Paste",
+      "selectAll": "Select All"
+    },
+    "table": {
+      "alignmentScope": "Choose alignment scope",
+      "autoFit": "Auto-fit table",
+      "currentColumn": "Current column",
+      "deleteColumn": "Delete current column",
+      "deleteRow": "Delete current row",
+      "deleteTable": "Delete table",
+      "insertColumnLeft": "Insert column to the left",
+      "insertColumnRight": "Insert column to the right",
+      "insertRowAbove": "Insert row above",
+      "insertRowBelow": "Insert row below",
+      "wholeTable": "Entire table"
+    },
+    "tile": {
+      "close": "Unpin",
+      "copy": "Copy",
+      "save": "Save",
+      "switchToPad": "Switch to Window"
+    }
+  },
+  "errors": {
+    "categoryAlreadyExists": "Category \"{{category}}\" already exists",
+    "categoryNameEmpty": "Category name cannot be empty",
+    "categoryNameInvalidChars": "Category name cannot contain special characters",
+    "categoryNotFound": "Category \"{{category}}\" not found",
+    "desktopConfig": "Failed to update desktop configuration",
+    "duplicateShortcut": "Show/Hide shortcut cannot be the same as Quick Note shortcut",
+    "imagePasteFailed": "Image paste failed",
+    "imageTooLarge": "Image file too large (max 20 MB)",
+    "noPool": "Notepad window pool not yet initialized",
+    "noteNotFound": "Note not found",
+    "unsupportedFile": "Only .md files are supported",
+    "unsupportedImageFormat": "Unsupported image format",
+    "unsupportedShortcut": "{{field}} configuration is invalid",
+    "unsupportedShortcutGeneric": "Shortcut configuration is invalid"
+  },
+  "markdown": {
+    "copied": "Copied",
+    "copy": "Copy",
+    "codeBlock": {
+      "delete": "Delete code block",
+      "language": "Code language",
+      "noLanguage": "No matching language",
+      "searchLanguage": "Search code languages"
+    },
+    "emptyHint": "Preview of the current note",
+    "mermaid": {
+      "diagram": "Mermaid diagram",
+      "editSource": "Edit source",
+      "hideSource": "Hide source",
+      "invalid": "The diagram syntax could not be rendered",
+      "rendering": "Rendering diagram…",
+      "source": "Diagram source",
+      "zoom": "Diagram {{percent}}%",
+      "zoomHint": "Hold Ctrl and scroll to zoom only this diagram"
+    },
+    "alert": {
+      "note": "Note",
+      "tip": "Tip",
+      "important": "Important",
+      "warning": "Warning",
+      "caution": "Caution"
+    }
+  },
+  "main": {
+    "category": {
+      "confirmDelete": "Delete folder \"{{category}}\"? Notes will move outside folders.",
+      "confirmDeleteAction": "Delete Folder",
+      "delete": "Delete Folder",
+      "dragToReorder": "Drag to reorder folders",
+      "dropToRemove": "Drop a note here to move it out of its folder",
+      "emptyFolder": "Empty Folder",
+      "markdownImported": "Imported {{count}} Markdown file(s)",
+      "markdownOnly": "Only .md or .markdown files can be dropped here",
+      "markdownDropHint": "Drop to import Markdown",
+      "markdownDropDetail": "Files will be added to the current folder",
+      "new": "New Folder",
+      "placeholder": "Enter folder name…",
+      "rename": "Rename",
+      "uncategorized": "Not in a folder"
+    },
+    "confirm": {
+      "reloadFromDisk": "There are unsaved changes. Reloading from disk will discard them. Continue?",
+      "unsavedExternalFile": "\"{{title}}\" has unsaved changes. Save to the original file?"
+    },
+    "editor": {
+      "confirmDelete": "Confirm delete?",
+      "contentLabel": "Content editor",
+      "contentPlaceholder": "Start writing…",
+      "emptyHint": "Select or create a note",
+      "pinToTile": "Pin to Tile",
+      "previewLabel": "Preview",
+      "reloadFromDisk": "Reload from disk",
+      "reloadedFromDisk": "Reloaded from disk",
+      "reloadMissing": "This note no longer exists on disk and was removed from the list",
+      "richEditorError": "The content editor could not process this Markdown",
+      "showSource": "Show Markdown source",
+      "sourceLabel": "Markdown source",
+      "textZoom": "Text {{percent}}%",
+      "undo": "Undo (Ctrl+Z)",
+      "undoLabel": "Undo",
+      "redo": "Redo (Ctrl+Y)",
+      "redoLabel": "Redo"
+    },
+    "externalFile": {
+      "label": "External File · {{path}}"
+    },
+    "externalFiles": {
+      "remove": "Remove from list",
+      "title": "External Files"
+    },
+    "formatSample": {
+      "boldText": "Bold text",
+      "codeText": "Code",
+      "headingText": "Heading",
+      "italicText": "Italic text",
+      "listItem": "List item",
+      "quoteText": "Blockquote"
+    },
+    "search": {
+      "empty": "No notes yet",
+      "noResults": "No matching notes"
+    },
+    "sidebar": {
+      "clearSearch": "Clear search",
+      "importMarkdown": "Import Markdown",
+      "importDocument": "Import document",
+      "newFolder": "New Folder",
+      "newNote": "New Note",
+      "searchPlaceholder": "Search notes…"
+    },
+    "images": {
+      "cleanUnused": "Clean unused images",
+      "cleaned": "Cleaned {{count}} image(s)",
+      "cleanedNone": "No unused images"
+    },
+    "statusBar": {
+      "byteSize": "{{size}} KB",
+      "encoding": "UTF-8",
+      "format": "Markdown + LaTeX",
+      "lineNumber": "Ln {{count}}",
+      "linePosition": "Ln {{current}} / {{total}}",
+      "selectedCharacters": "{{count}} selected",
+      "totalCharacters": "{{count}} chars",
+      "saveState": {
+        "dirty": "Unsaved",
+        "error": "Save failed",
+        "idle": "No selection",
+        "saved": "Saved",
+        "saving": "Saving"
+      }
+    },
+    "paperMargin": {
+      "title": "Paper margin",
+      "collapse": "Collapse paper margin",
+      "expand": "Expand paper margin",
+      "today": "This page",
+      "lines": " lines",
+      "characters": " chars",
+      "minutes": " min",
+      "outline": "Outline",
+      "noHeadings": "Add a heading and the shape of this note will grow here.",
+      "inspiration": "Inspiration slip",
+      "nextPrompt": "Another prompt",
+      "footnote": "Write slowly. The paper remembers.",
+      "prompts": {
+        "detail": "Write down one small detail only you noticed.",
+        "question": "If this page were a question, what would it ask?",
+        "reverse": "Try telling it once from the ending backwards.",
+        "small": "Start with the smallest sentence you know is true.",
+        "senses": "What are the light, sound, and scent like right now?"
+      }
+    },
+    "writingPet": {
+      "name": "Mikan",
+      "habitat": "Mikan's little windowsill",
+      "touch": "Pet Mikan",
+      "touchAndHide": "Click to pet Mikan; double-click to hide",
+      "hidden": "Mikan is taking a break. Double-click the blank area to the right of the title to bring the cat back.",
+      "restored": "Mikan is back.",
+      "restore": "Double-click to restore the cat",
+      "saving": "I'll keep an eye on this sentence.",
+      "saved": "Safely tucked away. A flower for you.",
+      "error": "This page isn't tucked away yet. Try again?",
+      "messages": {
+        "hello": "Mrrp. You write; I'll stay.",
+        "listen": "I think I just heard a very good sentence.",
+        "line": "One more line. Just one.",
+        "secret": "Don't worry, I never tell anyone about drafts.",
+        "rest": "Drop your shoulders. I'll watch the page for a moment."
+      }
+    },
+    "toolbar": {
+      "blockMath": "Block math",
+      "bold": "Bold",
+      "code": "Code",
+      "heading": "Heading",
+      "hr": "Horizontal rule",
+      "inlineMath": "Inline math",
+      "italic": "Italic",
+      "ol": "Ordered list",
+      "quote": "Blockquote",
+      "ul": "Unordered list"
+    },
+    "window": {
+      "close": "Close",
+      "collapseSidebar": "Collapse sidebar",
+      "expandSidebar": "Expand sidebar",
+      "maximize": "Maximize",
+      "minimize": "Minimize",
+      "about": "About",
+      "externalNotepadUnsupported": "External files do not support Quick Note yet",
+      "manualSync": "Sync with GitHub now",
+      "manualSyncChanged": "Sync complete: {{uploaded}} uploaded, {{downloaded}} downloaded",
+      "manualSyncConflicts": "{{message}}; kept {{conflicts}} conflict copies",
+      "manualSyncDisabled": "Enable GitHub sync in Settings first",
+      "manualSyncFailed": "Sync failed; click to retry",
+      "manualSyncing": "Syncing…",
+      "manualSyncSaveFailed": "The current note could not be saved, so sync did not start",
+      "manualSyncSuccess": "Sync complete",
+      "manualSyncUnchanged": "Sync complete; local notes and GitHub already match",
+      "openCurrentAsNotepad": "Open current note as Quick Note",
+      "quickNotepad": "Quick Note",
+      "restore": "Restore",
+      "selectNoteForNotepad": "Select a note first",
+      "settings": "Settings"
+    }
+  },
+  "noteMenu": {
+    "copyFilePath": "Copy file path",
+    "delete": "Delete Note",
+    "export": "Export Markdown",
+    "exportMarkdown": "Export as Markdown",
+    "exportPdf": "Export as PDF",
+    "filePathCopied": "File path copied",
+    "pdfExported": "PDF saved",
+    "moveToCategory": "Move to folder…",
+    "openInFolder": "Show in folder",
+    "openNotepad": "Open as quick note",
+    "openOriginalWord": "Open original Word file",
+    "revealOriginalWord": "Show original Word file",
+    "saveOriginalPdf": "Save original PDF as…"
+  },
+  "notepad": {
+    "button": {
+      "clear": "Clear",
+      "new": "New Note"
+    },
+    "editLock": {
+      "editable": "Editable",
+      "lockTitle": "Lock to prevent accidental changes",
+      "readOnly": "Read only",
+      "unlockTitle": "Unlock to make changes"
+    },
+    "emptyState": "No notes available",
+    "search": {
+      "clear": "Clear search",
+      "noResults": "No matching notes",
+      "placeholder": "Search notes…"
+    },
+    "error": {
+      "copyUnsupported": "Copy is not supported in this environment"
+    },
+    "placeholder": {
+      "content": "Write something…",
+      "title": "Title (optional)"
+    },
+    "status": {
+      "copied": "Copied",
+      "empty": "Empty",
+      "opened": "Opened",
+      "saveFailed": "Save failed",
+      "saved": "Saved",
+      "unsaved": "Unsaved"
+    },
+    "tab": {
+      "edit": "Edit",
+      "new": "New",
+      "open": "Open"
+    },
+    "tooltip": {
+      "close": "Close",
+      "closeTile": "Close Tile",
+      "openInEditor": "Open in Editor",
+      "pinToTile": "Pin as Desktop Tile",
+      "returnToPad": "Return to Note Editor"
+    }
+  },
+  "settings": {
+    "autoSave": {
+      "externalFile": "Auto-save external files",
+      "note": "Auto-save notes",
+      "surface": "Auto-save surface notes"
+    },
+    "autostart": "Launch on Startup",
+    "closeTitle": "Close Settings",
+    "closeToTray": "Close to Tray",
+    "defaultView": {
+      "edit": "Edit",
+      "hint": "Content editing supports Markdown shortcuts; the source panel is always available.",
+      "label": "Default view",
+      "preview": "Preview",
+      "showSource": "Show Markdown source by default",
+      "split": "Split"
+    },
+    "fontSize": {
+      "editor": "Editor font size",
+      "surface": "Surface font size"
+    },
+    "locale": {
+      "enUS": "English",
+      "label": "Language",
+      "zhCN": "简体中文",
+      "zhHK": "繁體中文"
+    },
+    "dataDir": "Data directory",
+    "dataDirHint": "The selected folder is the workspace. Markdown stays in place; only metadata.json is added for titles and ordering.",
+    "openAtCursor": "Open near cursor with shortcut",
+    "quickNoteShortcut": "Quick Note shortcut",
+    "rememberSurfaceSize": "Remember surface size",
+    "showWritingPet": "Show writing cat",
+    "showWritingPetHint": "Double-click the cat to hide it quickly. Double-click the blank area to the right of the title to restore it.",
+    "tabIndentSize": "Tab indent width",
+    "selectFolder": "Open Folder",
+    "openFolderConfirm": "Use “{{dir}}” directly as the active workspace and load its Markdown files? Only metadata.json will be added; no notes subfolder will be created. The previous workspace remains intact.",
+    "openFolderSuccess": "Workspace switched. Loaded {{count}} Markdown notes.",
+    "shortcut": {
+      "cancelHint": "Esc to cancel",
+      "clear": "Clear",
+      "checkFailed": "Shortcut check failed",
+      "checking": "Checking shortcut...",
+      "cleared": "Shortcut cleared",
+      "clickToRecord": "Click to record",
+      "conflict": {
+        "current": "Shortcut {{shortcut}} is currently in use",
+        "invalid": "Shortcut {{shortcut}} is not supported",
+        "none": "No conflict detected for {{shortcut}}",
+        "registered": "Shortcut {{shortcut}} may be occupied by the system or another app",
+        "system": "Shortcut {{shortcut}} conflicts with a system shortcut",
+        "unknown": "Check completed, but failed to release temporary shortcut"
+      },
+      "forQuickNote": "Opens the Quick Note window",
+      "needsModifier": "Shortcut must include Ctrl, Option/Alt, or Command/Meta",
+      "notSet": "Not set",
+      "pressHint": "Press shortcut...; press Delete to clear."
+    },
+    "theme": {
+      "dark": "Dark",
+      "label": "Theme",
+      "light": "Light",
+      "system": "System",
+      "white": "Clean white"
+    },
+    "tileColor": {
+      "custom": "Custom",
+      "followTheme": "Follow Theme",
+      "label": "Tile color"
+    },
+    "tileCtrlClose": "Ctrl+Right-click to close tile",
+    "tileRenderMarkdown": "Render Markdown on tile",
+    "tileDoubleClickToEdit": "Double-click tile to edit",
+    "tileSaveReturnsToPin": "Return to tile after saving",
+    "renderHtmlMarkdown": "Render HTML tags in Markdown",
+    "splitScrollSync": "Split view scroll sync",
+    "title": "Settings",
+    "update": {
+      "advanced": "Advanced",
+      "allowPrerelease": "Allow prerelease versions",
+      "autoCheck": "Automatically check for updates",
+      "autoDownload": "Download new versions automatically",
+      "available": "New version {{version}} is available",
+      "busy": "Working",
+      "cancel": "Cancel Download",
+      "cancelRequested": "Cancellation requested",
+      "cancelled": "Download cancelled",
+      "cdkCleared": "CDK cleared",
+      "cdkSaved": "CDK saved to system secure storage",
+      "channel": {
+        "beta": "beta",
+        "stable": "stable"
+      },
+      "check": "Check Updates",
+      "checking": "Checking...",
+      "confirmClearCdk": "Clear the MirrorChyan CDK?",
+      "currentVersion": "Current version: {{version}}",
+      "error": {
+        "alreadyRunning": "An update task is already running",
+        "cancelUnavailable": "There is no update task to cancel",
+        "cdkEmpty": "MirrorChyan CDK cannot be empty",
+        "checkInterrupted": "The last update check was interrupted and has been reset to idle",
+        "checkTaskJoinFailed": "Update check task failed to complete",
+        "downloadAssetMismatch": "Update package info does not match the last check result; please re-check for updates",
+        "downloadClientUnavailable": "The download client is unavailable; please try again later",
+        "downloadHashMismatch": "The downloaded file hash did not match",
+        "downloadHttpStatus": "The download request failed. Please try again later.",
+        "downloadInterrupted": "The last download was interrupted; please download again",
+        "downloadManifestUnavailable": "The GitHub update manifest is not configured for this stage",
+        "downloadManifestUnreadable": "The GitHub update manifest could not be read",
+        "downloadNetwork": "The network connection was interrupted during download; please try again later",
+        "downloadNotReady": "There is no update package ready to download",
+        "downloadRedirectInvalid": "Invalid download redirect URL",
+        "downloadRedirectLoop": "Too many download redirects; please try again later",
+        "downloadSizeMismatch": "The downloaded file size did not match",
+        "downloadSourceInvalid": "The download source parameter is invalid",
+        "downloadTaskJoinFailed": "The download task failed to finish cleanly",
+        "downloadTimeout": "Download request timed out; please try again later",
+        "downloadUrlInvalid": "The download URL is invalid or not HTTPS",
+        "downloadUrlNotAllowed": "The download URL host is not allowlisted",
+        "downloadVersionMismatch": "Download version does not match the checked version; please re-check for updates",
+        "githubApi": "GitHub API request failed; check your network and try again",
+        "githubNoAssets": "No usable assets found in GitHub Release",
+        "githubRateLimited": "GitHub API rate limit exceeded; please try again later",
+        "helperNotFound": "Update helper executable was not found",
+        "installAssetExtractFailed": "Could not unpack the downloaded update asset",
+        "installAssetHashMismatch": "Update package hash verification failed",
+        "installAssetMissing": "Update package is missing or unreadable",
+        "installAssetSizeMismatch": "Update package size verification failed",
+        "installCleanupFailed": "Failed to clean up temporary files after install",
+        "installHelperFailed": "Update helper execution failed",
+        "installHelperHandshakeFailed": "The update helper did not become ready before the app tried to exit",
+        "installHelperInvalidArguments": "Update helper arguments are invalid",
+        "installInstallerBusy": "Another installer is already running. Please try again later.",
+        "installInstallerCancelled": "The update installer was cancelled",
+        "installInstallerFailed": "The update installer failed to complete",
+        "installInstallerFatal": "The update installer returned a fatal error",
+        "installInstallerTimedOut": "The update installer timed out before completion",
+        "installInsufficientSpace": "There is not enough free disk space to install the update",
+        "installInterrupted": "The last installation was not completed; please retry the installation",
+        "installLogWriteFailed": "Unable to write install log",
+        "installNotReady": "No downloaded update is ready to install",
+        "installRelaunchFailed": "The app could not be reopened after the update",
+        "installReplaceFailed": "Failed to replace the current installation",
+        "installSaveFailed": "Autosaving open content failed before install. Resolve it and try again.",
+        "installSaveTimedOut": "Timed out waiting for open windows to save before install",
+        "installSpawnFailed": "Failed to launch update helper",
+        "installStateWriteFailed": "Could not write the install state file",
+        "installTargetMissing": "The current install target no longer exists",
+        "installTaskJoinFailed": "Install task failed to complete",
+        "installUnsupportedKind": "This install type does not support in-app installation yet",
+        "installVersionMismatch": "The app reopened on the old version after install. Retry the install directly.",
+        "installWaitTimedOut": "Timed out waiting for the app to exit before installing",
+        "manifestAppIdMismatch": "The update manifest does not belong to this application",
+        "manifestAssetNotFound": "No matching update package found for the current platform",
+        "manifestInvalid": "Invalid update manifest format",
+        "manifestMissingAssets": "The update manifest does not contain any downloadable assets",
+        "manifestUnsupportedSchema": "The update manifest uses an unsupported schema version",
+        "mirrorChyanApi": "MirrorChyan API request failed; please check your network and try again",
+        "mirrorChyanBusiness": "MirrorChyan returned a business error; please try again later",
+        "mirrorChyanCdk": "MirrorChyan CDK verification failed; please check your CDK",
+        "mirrorChyanCdkBlocked": "Your MirrorChyan CDK has been blocked; please contact MirrorChyan support",
+        "mirrorChyanCdkExpired": "Your MirrorChyan CDK has expired; please renew or replace it",
+        "mirrorChyanCdkInvalid": "MirrorChyan CDK is incorrect; please verify your input",
+        "mirrorChyanCdkMismatched": "MirrorChyan CDK type does not match this application",
+        "mirrorChyanCdkQuotaExhausted": "MirrorChyan CDK daily download limit reached; try again tomorrow or upgrade your plan",
+        "mirrorChyanDownloadNeedCdk": "MirrorChyan did not return a download link. Configure a valid CDK and try again.",
+        "mirrorChyanDownloadUnavailable": "MirrorChyan downloads are not configured yet; use GitHub for now",
+        "mirrorChyanInvalidArch": "MirrorChyan does not support the current architecture; please update the app",
+        "mirrorChyanInvalidChannel": "MirrorChyan does not support the current update channel; please update the app",
+        "mirrorChyanInvalidOs": "MirrorChyan does not support the current OS parameter; please update the app",
+        "mirrorChyanInvalidParams": "MirrorChyan request parameters are incorrect; please update the app and try again",
+        "mirrorChyanResourceNotFound": "No resource available for this platform on MirrorChyan; use GitHub instead",
+        "platformUnsupported": "This platform or install type does not support in-app updates yet",
+        "portableManualOnly": "Portable builds must be updated manually by replacing the downloaded package",
+        "providerFixtureUnreadable": "The local update manifest fixture could not be read",
+        "providerNotConfigured": "The update source has not been configured with a test manifest",
+        "secureStoreUnavailable": "System secure storage is unavailable. Try again later.",
+        "sourceNotConfigured": "Update sources are not configured; this stage only supports local manifest injection",
+        "stateCorrupted": "The update state file is corrupted and has been reset",
+        "stateLockTimeout": "Timed out waiting for the update state file lock; please try again later",
+        "versionInvalid": "Invalid version format"
+      },
+      "confirmInstall": "The app will save open content, close, install the update, and reopen when it is done. Continue?",
+      "download": "Download Update",
+      "downloaded": "Version {{version}} has finished downloading",
+      "interval": {
+        "custom": "{{hours}} hours",
+        "daily": "Daily",
+        "label": "Check frequency",
+        "weekly": "Weekly"
+      },
+      "install": "Install & Restart",
+      "installFailed": "The latest install attempt failed. Review the log and retry or download again.",
+      "installFailedTitle": "Update Installation Failed",
+      "installPreparing": "Preparing to exit the app and install the update...",
+      "installRetry": "Retry Install",
+      "installScheduled": "A legacy pending-install state was found. Click Install & Restart again to finish replacing the app.",
+      "installValidated": "The app will close to install the update and reopen when it is done.",
+      "latestVersion": "Pending version: {{version}}",
+      "loading": "Reading update settings...",
+      "mirrorChyan": {
+        "hideCdk": "Hide CDK",
+        "noCdkHint": "Don't have or forgot your CDK? Visit ",
+        "noCdkHintSuffix": " to get one.",
+        "placeholder": "Click to enter CDK",
+        "showCdk": "Show CDK",
+        "title": "MirrorChyan CDK"
+      },
+      "notAvailable": "You are on the latest version",
+      "saved": "Update settings saved",
+      "settingsTitle": "Update Settings",
+      "speed": "Speed: {{speed}}",
+      "checkSource": {
+        "label": "Check API source",
+        "github": "GitHub",
+        "mirrorChyan": "MirrorChyan"
+      },
+      "source": {
+        "github": "GitHub",
+        "label": "Download source",
+        "mirrorChyan": "MirrorChyan"
+      },
+      "title": "Updates"
+    },
+    "visibilityShortcut": "Show/Hide window shortcut",
+    "background": {
+      "label": "Background image",
+      "default": "Default background",
+      "choose": "Choose",
+      "clear": "Clear background image",
+      "dim": "Overlay",
+      "scale": "Scale",
+      "positionX": "Horizontal",
+      "positionY": "Vertical",
+      "blur": "Blur",
+      "fit": {
+        "cover": "Cover",
+        "contain": "Contain",
+        "repeat": "Repeat"
+      }
+    }
+  },
+  "tile": {
+    "empty": "Empty"
+  }
+}
