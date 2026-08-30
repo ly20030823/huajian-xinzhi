@@ -274,7 +274,7 @@ impl UpdateCheckService {
             context.platform.arch,
             context.platform.install_kind
         );
-        if let Err(error) = context.platform.ensure_in_app_updates_supported() {
+        if let Err(error) = context.platform.ensure_update_check_supported() {
             persist_last_auto_check_at(paths, &settings)?;
             state::save(paths, &failed_state(&context, &settings, &error))?;
             return Err(error);
@@ -1003,15 +1003,10 @@ fn load_manifest_candidate(
     })))
 }
 
-fn check_provider_order(preference: &CheckSourcePreference) -> Vec<DownloadSourceUsed> {
-    match preference {
-        CheckSourcePreference::MirrorChyanFirst => {
-            vec![DownloadSourceUsed::MirrorChyan, DownloadSourceUsed::Github]
-        }
-        CheckSourcePreference::GithubFirst => {
-            vec![DownloadSourceUsed::Github, DownloadSourceUsed::MirrorChyan]
-        }
-    }
+fn check_provider_order(_preference: &CheckSourcePreference) -> Vec<DownloadSourceUsed> {
+    // 花笺·新枝只以当前项目的 GitHub Release 为版本事实来源。
+    // 不回退到上游项目或第三方镜像，避免把另一个项目的版本误报为本软件更新。
+    vec![DownloadSourceUsed::Github]
 }
 
 fn merge_candidates(mut candidates: Vec<UpdateCandidate>) -> Option<UpdateCandidate> {
@@ -1091,30 +1086,11 @@ fn merge_candidates(mut candidates: Vec<UpdateCandidate>) -> Option<UpdateCandid
 }
 
 fn recommended_source(
-    preference: &DownloadSourcePreference,
-    can_download_from_mirror_chyan: bool,
+    _preference: &DownloadSourcePreference,
+    _can_download_from_mirror_chyan: bool,
     can_download_from_github: bool,
 ) -> Option<DownloadSourceUsed> {
-    match preference {
-        DownloadSourcePreference::MirrorChyanFirst => {
-            if can_download_from_mirror_chyan {
-                Some(DownloadSourceUsed::MirrorChyan)
-            } else if can_download_from_github {
-                Some(DownloadSourceUsed::Github)
-            } else {
-                None
-            }
-        }
-        DownloadSourcePreference::GithubFirst => {
-            if can_download_from_github {
-                Some(DownloadSourceUsed::Github)
-            } else if can_download_from_mirror_chyan {
-                Some(DownloadSourceUsed::MirrorChyan)
-            } else {
-                None
-            }
-        }
-    }
+    can_download_from_github.then_some(DownloadSourceUsed::Github)
 }
 
 fn aggregate_provider_errors(errors_list: Vec<AppError>) -> AppError {
@@ -1276,8 +1252,8 @@ mod tests {
     }
 
     #[test]
-    fn falls_back_to_mirror_chyan_when_github_is_not_configured() {
-        let paths = test_paths("check-github-first-mirror-chyan-fallback");
+    fn does_not_fall_back_to_mirror_chyan_when_github_is_not_configured() {
+        let paths = test_paths("check-github-only-no-mirror-fallback");
         let mirror_chyan_manifest = write_manifest(&paths, "mirror.json", "1.0.5");
         let service = UpdateCheckService::with_providers(
             MirrorChyanProvider::with_manifest_path(mirror_chyan_manifest),
@@ -1285,16 +1261,12 @@ mod tests {
         );
         let settings = test_settings(CheckSourcePreference::GithubFirst);
 
-        let (result, _) = service
-            .evaluate(&settings, &test_context(InstallKind::MacosAppBundle))
-            .expect("github fails but mirror_chyan succeeds as fallback");
-
-        assert_eq!(result.status, UpdateCheckStatus::Available);
-        assert_eq!(result.latest_version.as_deref(), Some("1.0.5"));
+        let result = service.evaluate(&settings, &test_context(InstallKind::MacosAppBundle));
+        assert!(result.is_err());
     }
 
     #[test]
-    fn prefers_highest_available_version_across_providers() {
+    fn ignores_other_provider_versions_and_uses_github_release() {
         let paths = test_paths("check-highest-version");
         let mirror_chyan_manifest = write_manifest(&paths, "mirror.json", "1.0.5");
         let github_manifest = write_manifest(&paths, "github.json", "1.0.6");
@@ -1370,12 +1342,12 @@ mod tests {
 
         assert_eq!(
             result.recommended_source,
-            Some(DownloadSourceUsed::MirrorChyan)
+            Some(DownloadSourceUsed::Github)
         );
-        assert_eq!(next_state.source, Some(DownloadSourceUsed::MirrorChyan));
+        assert_eq!(next_state.source, Some(DownloadSourceUsed::Github));
         assert_eq!(
             result.asset_url.as_deref(),
-            Some("https://mirrorchyan.com/resources/download/floral-notepaper-1.0.5-macos-aarch64")
+            Some("https://github.com/ly20030823/huajian-xinzhi/releases/download/v1.0.5/floral-notepaper_1.0.5_macos_aarch64_app.zip")
         );
         assert_eq!(next_state.asset_url, result.asset_url);
     }
@@ -1490,7 +1462,7 @@ mod tests {
     }
 
     #[test]
-    fn run_rejects_windows_portable_install_kind() {
+    fn run_allows_windows_portable_to_reach_the_release_provider() {
         let paths = test_paths("check-run-portable-platform");
         let service = UpdateCheckService::with_providers_and_platform(
             MirrorChyanProvider::offline(),
@@ -1502,7 +1474,7 @@ mod tests {
             .run(&paths, true, "1.0.3")
             .expect_err("portable install kind should be rejected");
 
-        assert_eq!(error.code, "updatePortableManualOnly");
+        assert_ne!(error.code, "updatePortableManualOnly");
         let saved_state = state::load(&paths).expect("load failed state");
         assert_eq!(saved_state.status, UpdateStatus::Failed);
         assert_eq!(
@@ -1510,7 +1482,7 @@ mod tests {
                 .last_error
                 .as_ref()
                 .and_then(|error| error.action.as_deref()),
-            Some("useSupportedInstall")
+            Some("configureUpdateSource")
         );
     }
 

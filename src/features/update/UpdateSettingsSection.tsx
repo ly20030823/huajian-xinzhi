@@ -34,6 +34,8 @@ import type {
 
 type BusyAction = "settings" | "checking" | "cdk" | "download" | "cancel" | "install" | null;
 
+const UPDATE_REPOSITORY_URL = "https://github.com/ly20030823/huajian-xinzhi";
+
 interface UpdateSettingsSectionProps {
   initialSettings?: UpdateSettings;
   initialStatus?: UpdateState;
@@ -489,6 +491,14 @@ export function UpdateSettingsSection({
                         defaultValue: "当前版本：{{version}}",
                       })}
               </p>
+              <button
+                type="button"
+                onClick={() => void openUrl(`${UPDATE_REPOSITORY_URL}/releases/latest`)}
+                className="mt-1 text-left text-[10px] text-ink-ghost transition-colors hover:text-bamboo"
+                title={UPDATE_REPOSITORY_URL}
+              >
+                更新来源：ly20030823/huajian-xinzhi
+              </button>
             </div>
             <button
               type="button"
