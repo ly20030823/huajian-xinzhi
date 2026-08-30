@@ -47,7 +47,7 @@ const status: UpdateState = {
 };
 
 describe("UpdateSettingsSection", () => {
-  test("renders check-only update controls for the about panel", () => {
+  test("renders repository-backed update controls for the settings panel", () => {
     const markup = renderToStaticMarkup(
       <UpdateSettingsSection initialSettings={settings} initialStatus={status} mode="checkOnly" />,
     );
@@ -55,6 +55,7 @@ describe("UpdateSettingsSection", () => {
     expect(markup).toContain("更新");
     expect(markup).toContain("当前版本：1.0.4");
     expect(markup).toContain("检查更新");
+    expect(markup).toContain("更新来源：ly20030823/huajian-xinzhi");
     expect(markup).toContain("待更新版本：1.0.5");
     expect(markup).toContain("下载更新");
     expect(markup).not.toContain("自动检查更新");

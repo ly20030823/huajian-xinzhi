@@ -71,6 +71,26 @@ impl PlatformInfo {
             InstallKind::Unknown => Err(errors::unsupported_platform()),
         }
     }
+
+    /// Checking for a release is safe for portable Windows builds as well.
+    /// Only the later download/install step requires an installed NSIS build.
+    pub fn ensure_update_check_supported(&self) -> Result<(), AppError> {
+        if self.os == Os::Unsupported || self.arch == Arch::Unsupported {
+            return Err(errors::unsupported_platform());
+        }
+
+        if self.install_kind == InstallKind::Unknown {
+            if let Some(path) = &self.current_exe {
+                let lower = path.to_lowercase();
+                if lower.contains("target/debug") || lower.contains("target\\debug") {
+                    return Ok(());
+                }
+            }
+            return Err(errors::unsupported_platform());
+        }
+
+        Ok(())
+    }
 }
 
 pub fn current_platform() -> PlatformInfo {
