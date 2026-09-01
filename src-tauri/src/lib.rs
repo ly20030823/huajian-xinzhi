@@ -593,6 +593,7 @@ pub fn run() {
             sync::sync_token_clear,
             sync::sync_test_connection,
             sync::sync_workspaces_list,
+            sync::sync_preview,
             sync::sync_download,
             sync::sync_now,
             updater::commands::update_status,
