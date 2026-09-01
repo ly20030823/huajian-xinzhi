@@ -8,6 +8,7 @@ import { openPath, revealItemInDir } from "@tauri-apps/plugin-opener";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { AboutPanel } from "./AboutPanel";
+import { ActivityPanel } from "./ActivityPanel";
 import {
   exportMarkdownNote,
   exportPdfDocument,
@@ -156,7 +157,7 @@ function DocumentTypeBadges({ note }: { note: NoteMetadata }) {
     </span>
   );
 }
-type SidePanelMode = "about" | "settings";
+type SidePanelMode = "activity" | "about" | "settings";
 
 function ManualSyncIcon({ state }: { state: ManualSyncState }) {
   return (
@@ -519,6 +520,7 @@ export function MainWindow({
   const [noteMenuClosing, setNoteMenuClosing] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(initialSettingsOpen);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
   const [aboutUpdateReminder, setAboutUpdateReminder] = useState<AboutUpdateReminderState>(() =>
     createAboutUpdateReminderState(null),
   );
@@ -779,14 +781,17 @@ export function MainWindow({
         : applyAboutUpdateStatus(current, nextStatus),
     );
   }, []);
-  const visibleSidePanel: SidePanelMode | null = aboutOpen
-    ? "about"
-    : settingsOpen && settingsConfig
-      ? "settings"
-      : null;
+  const visibleSidePanel: SidePanelMode | null = activityOpen
+    ? "activity"
+    : aboutOpen
+      ? "about"
+      : settingsOpen && settingsConfig
+        ? "settings"
+        : null;
   const sidePanelExpanded = visibleSidePanel !== null;
   const openAboutPanel = useCallback(() => {
     setSettingsOpen(false);
+    setActivityOpen(false);
     setAboutOpen(true);
     setAboutUpdateReminder((current) => dismissAboutUpdateReminderText(current));
   }, []);
@@ -1668,6 +1673,7 @@ export function MainWindow({
     }
     setSettingsOpen(true);
     setAboutOpen(false);
+    setActivityOpen(false);
     if (settingsConfig) return;
     try {
       const config = await getConfig();
@@ -1804,11 +1810,27 @@ export function MainWindow({
     setSettingsOpen(false);
   }, []);
 
+  const handleOpenActivity = useCallback(() => {
+    setActivityOpen((open) => {
+      const nextOpen = !open;
+      if (nextOpen) {
+        setSettingsOpen(false);
+        setAboutOpen(false);
+      }
+      return nextOpen;
+    });
+  }, []);
+
+  const handleCloseActivity = useCallback(() => {
+    setActivityOpen(false);
+  }, []);
+
   const handleOpenAbout = useCallback(() => {
     setAboutOpen((open) => {
       const nextOpen = !open;
       if (nextOpen) {
         setSettingsOpen(false);
+        setActivityOpen(false);
         setAboutUpdateReminder((current) => dismissAboutUpdateReminderText(current));
       }
       return nextOpen;
@@ -3001,6 +3023,23 @@ export function MainWindow({
               >
                 <path d="M4 4h16v14H7l-3 3V4z" />
                 <path d="M8 9h8M8 13h5" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenActivity}
+              data-testid="open-activity-panel"
+              className={`w-10 h-11 flex items-center justify-center transition-all cursor-pointer ${
+                activityOpen
+                  ? "text-bamboo bg-bamboo-mist/55"
+                  : "text-ink-ghost hover:text-bamboo hover:bg-bamboo-mist/50"
+              }`}
+              title="工作足迹"
+              aria-label="打开工作足迹"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3.5" y="5" width="17" height="15" rx="2" />
+                <path d="M7.5 3v4M16.5 3v4M7.5 10h9M8 14h.01M12 14h.01M16 14h.01" />
               </svg>
             </button>
             <button
@@ -4446,8 +4485,8 @@ export function MainWindow({
               </div>
             </div>
           </div>
-          {settingsConfig && settingsOpen && settingsOverlay && (
-            <div className="absolute inset-0 z-20" onClick={handleCloseSettings} />
+          {visibleSidePanel && settingsOverlay && (
+            <div className="absolute inset-0 z-20" onClick={() => { setSettingsOpen(false); setAboutOpen(false); setActivityOpen(false); }} />
           )}
           <div
             data-testid="side-panel-host"
@@ -4460,6 +4499,15 @@ export function MainWindow({
             }`}
           >
             {visibleSidePanel === "about" ? <AboutPanel onClose={handleCloseAbout} /> : null}
+            {visibleSidePanel === "activity" ? (
+              <ActivityPanel
+                onClose={handleCloseActivity}
+                onCreateReport={async (reportTitle, reportContent) => {
+                  const note = await createNote({ title: reportTitle, content: reportContent, category: "" });
+                  replaceNoteMetadata(note);
+                }}
+              />
+            ) : null}
             {visibleSidePanel === "settings" && settingsConfig ? (
               <SettingsPanel
                 config={settingsConfig}
