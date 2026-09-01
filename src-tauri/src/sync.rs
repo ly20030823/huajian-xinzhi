@@ -1,4 +1,5 @@
 use crate::{
+    activity,
     json_io::write_json_atomic,
     services::notes::{default_store, AppError, DocumentKind, Note, NoteStore, CLOUD_BINARY_LIMIT_BYTES},
 };
@@ -453,6 +454,7 @@ fn perform_download() -> Result<SyncResult, AppError> {
         .map_err(|_| AppError::new("syncBusy", "另一轮同步正在进行，请稍候"))?;
 
     let store = default_store()?;
+    activity::prune_expired_for_data_dir(store.data_dir())?;
     let settings = load_effective_settings(&store)?;
     let github = github_from_settings(&settings)?;
     let workspace_root = workspace_repo_root(&settings.workspace_name);
@@ -508,6 +510,9 @@ fn perform_download() -> Result<SyncResult, AppError> {
         } else {
             source_path.clone()
         };
+        if activity::is_expired_activity_repo_path(&path) {
+            continue;
+        }
         let blob_sha = tree_map
             .get(&source_path)
             .cloned()
@@ -586,6 +591,7 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
         .map_err(|_| AppError::new("syncBusy", "另一轮同步正在进行，请稍候"))?;
 
     let store = default_store()?;
+    activity::prune_expired_for_data_dir(store.data_dir())?;
     let settings = load_effective_settings(&store)?;
     if !settings.enabled {
         return Err(AppError::new("syncDisabled", "请先在设置里启用 GitHub 同步"));
@@ -696,7 +702,7 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
     let mut merged_layout = merge_layout(&local_layout, &remote_layout, &state.layout_hash);
     normalize_layout(&mut merged_layout, &merged_notes);
 
-    let local_images = scan_local_images(store.data_dir(), &workspace_root)?;
+    let mut local_images = scan_local_images(store.data_dir(), &workspace_root)?;
     let remote_images = remote_manifest
         .images
         .iter()
@@ -721,7 +727,19 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
                 },
             )
         })
+        .filter(|(path, _)| !activity::is_expired_activity_repo_path(path))
         .collect::<BTreeMap<_, _>>();
+    merge_activity_conflicts(
+        store.data_dir(),
+        &github,
+        &local_images,
+        &remote_images,
+        &state.image_hashes,
+        &workspace_root,
+    )?;
+    // A resolved daily-record conflict has just been written to disk. Re-scan
+    // so the normal image/blob synchronizer uploads that merged value.
+    local_images = scan_local_images(store.data_dir(), &workspace_root)?;
     let (mut merged_images, image_downloads) =
         merge_images(&local_images, &remote_images, &state.image_hashes);
 
@@ -1066,6 +1084,44 @@ fn merge_images(
         }
     }
     (result, downloads)
+}
+
+fn merge_activity_conflicts(
+    data_dir: &Path,
+    github: &GitHub,
+    local: &BTreeMap<String, SnapshotImage>,
+    remote: &BTreeMap<String, SnapshotImage>,
+    base: &BTreeMap<String, String>,
+    workspace_root: &str,
+) -> Result<(), AppError> {
+    for (path, local_entry) in local {
+        if !activity::is_activity_repo_path(path) {
+            continue;
+        }
+        let Some(remote_entry) = remote.get(path) else {
+            continue;
+        };
+        let base_hash = base.get(path);
+        let both_changed = local_entry.content_hash != remote_entry.content_hash
+            && base_hash != Some(&local_entry.content_hash)
+            && base_hash != Some(&remote_entry.content_hash);
+        if !both_changed || remote_entry.blob_sha.is_empty() {
+            continue;
+        }
+
+        let local_path = data_dir.join(path_from_repo(path, workspace_root)?);
+        let local_bytes = fs::read(&local_path)?;
+        let remote_bytes = github.blob_bytes(&remote_entry.blob_sha)?;
+        // A manually damaged activity file should not prevent notes from
+        // syncing; keep the local copy and let the user repair that day.
+        let Ok(merged) = activity::merge_sync_days(&local_bytes, &remote_bytes) else {
+            continue;
+        };
+        if merged != local_bytes {
+            fs::write(local_path, merged)?;
+        }
+    }
+    Ok(())
 }
 
 fn merge_layout(local: &Layout, remote: &Layout, base_hash: &str) -> Layout {
@@ -1769,7 +1825,11 @@ fn validate_note_repo_path(
 
 fn is_managed_workspace_path(path: &str, workspace_root: &str) -> bool {
     path.strip_prefix(&format!("{workspace_root}/"))
-        .is_some_and(|relative| relative.starts_with("images/") || relative.ends_with(".md"))
+        .is_some_and(|relative| {
+            relative.starts_with("images/")
+                || relative.starts_with(".floral-originals/")
+                || relative.ends_with(".md")
+        })
 }
 
 fn rebase_legacy_image_path(workspace_root: &str, path: &str) -> Option<String> {

@@ -1,3 +1,4 @@
+pub mod activity;
 pub mod customization;
 pub mod desktop;
 pub mod json_io;
@@ -13,6 +14,26 @@ use services::notes::{
 };
 use std::{env, fs, io::Write, path::PathBuf};
 use tauri::{AppHandle, Emitter, Manager};
+
+#[tauri::command]
+fn activity_get(date: String) -> Result<activity::ActivityDay, AppError> {
+    activity::get_day(date)
+}
+
+#[tauri::command]
+fn activity_save(request: activity::SaveActivityRequest) -> Result<activity::ActivityDay, AppError> {
+    activity::save_day(request)
+}
+
+#[tauri::command]
+fn activity_month(year: i32, month: u32) -> Result<Vec<activity::ActivityDay>, AppError> {
+    activity::list_month(year, month)
+}
+
+#[tauri::command]
+fn activity_month_report(year: i32, month: u32) -> Result<String, AppError> {
+    activity::month_report(year, month)
+}
 
 #[tauri::command]
 fn app_name() -> Result<String, AppError> {
@@ -562,6 +583,10 @@ pub fn run() {
             open_tile_window,
             toggle_tile_window,
             open_note_in_editor,
+            activity_get,
+            activity_save,
+            activity_month,
+            activity_month_report,
             sync::sync_settings_get,
             sync::sync_settings_save,
             sync::sync_token_set,
