@@ -1954,7 +1954,11 @@ workspaces/
 
 ## 新设备入住
 
-先在新设备上打开一个空的本地文件夹，再进入「设置 → GitHub 同步」，填入仓库地址、`main` 分支和具有 **Contents: Read and write** 权限的访问令牌。点击「读取云端」，选择要搬回来的工作区，再点击「下载云端」。这个按钮只读取 GitHub，不会上传或删除云端文件；确认下载完成后，再按需要启用日常双向同步。
+先在新设备上打开一个空的本地文件夹，再进入「设置 → GitHub 同步」。访问令牌不会跟着仓库或 Windows 凭据管理器搬到另一台电脑；GitHub 也只会在创建时完整显示一次，所以请在**新设备使用同一个 GitHub 账号新建一个令牌**，不必、也不建议从旧电脑导出。
+
+创建方法：GitHub 网页右上角头像 → **Settings** → **Developer settings** → **Personal access tokens** → **Fine-grained tokens** → **Generate new token**。只选择这个同步仓库，并在 **Repository permissions** 中把 **Contents** 设为 **Read and write**；创建后立即复制令牌，回到花笺粘贴保存。
+
+然后填入仓库地址、`main` 分支和刚创建的令牌。点击「读取云端」，选择要搬回来的工作区，再点击「下载云端」。这个按钮只读取 GitHub，不会上传或删除云端文件；确认下载完成后，再按需要启用日常双向同步。每台电脑使用各自的令牌更安全；不再使用某台设备时，只需在 GitHub 撤销它的令牌，不影响其他设备。
 
 ---
 

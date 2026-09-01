@@ -346,6 +346,9 @@ export function GitSyncSettingsSection() {
         <span className="text-ink-faint"> Contents：Read and write</span> 权限。不要把令牌写进笔记或仓库。
       </p>
       <p className="text-[10px] leading-relaxed text-ink-ghost">
+        新电脑请用同一 GitHub 账号另建一个令牌：GitHub「Settings → Developer settings → Personal access tokens → Fine-grained tokens」。令牌无法从旧电脑找回明文，也不建议共用。
+      </p>
+      <p className="text-[10px] leading-relaxed text-ink-ghost">
         GitHub 会按{" "}
         <span className="font-mono text-ink-faint">
           workspaces/云端工作区/分类/笔记标题.md
