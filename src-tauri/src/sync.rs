@@ -79,6 +79,28 @@ pub struct SyncRequest {
     pub category_order: Vec<String>,
     #[serde(default)]
     pub note_order: Vec<String>,
+    #[serde(default)]
+    pub mode: SyncMode,
+}
+
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum SyncMode {
+    #[default]
+    Smart,
+    LocalWins,
+    CloudWins,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncPreview {
+    pub baseline_available: bool,
+    pub requires_choice: bool,
+    pub local_notes: usize,
+    pub remote_notes: usize,
+    pub differing_notes: usize,
+    pub message: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -118,6 +140,10 @@ struct SyncState {
     workspace_name: String,
     #[serde(default)]
     note_hashes: BTreeMap<String, String>,
+    #[serde(default)]
+    note_content_hashes: BTreeMap<String, String>,
+    #[serde(default)]
+    note_metadata_hashes: BTreeMap<String, String>,
     #[serde(default)]
     image_hashes: BTreeMap<String, String>,
     #[serde(default)]
@@ -378,6 +404,73 @@ pub async fn sync_workspaces_list() -> Result<Vec<RemoteWorkspace>, AppError> {
 }
 
 #[tauri::command]
+pub async fn sync_preview() -> Result<SyncPreview, AppError> {
+    tauri::async_runtime::spawn_blocking(|| {
+        let store = default_store()?;
+        let settings = load_effective_settings(&store)?;
+        let state = load_state_for_sync(store.config_dir(), store.data_dir(), &settings, false)?;
+        let local = local_notes()?;
+        let github = github_from_settings(&settings)?;
+        let head = github.ensure_head()?;
+        let commit = github.commit(&head.sha)?;
+        let tree = github.tree(&commit.tree.sha)?;
+        let manifest_path = workspace_manifest_path(&settings.workspace_name);
+        let remote_manifest = tree
+            .tree
+            .iter()
+            .find(|entry| entry.kind == "blob" && entry.path == manifest_path)
+            .map(|entry| github.blob_bytes(&entry.sha))
+            .transpose()?
+            .map(|bytes| serde_json::from_slice::<SyncManifest>(&bytes))
+            .transpose()?
+            .unwrap_or_default();
+        let remote = remote_manifest
+            .notes
+            .iter()
+            .map(|note| (note.id.as_str(), note.record_hash.as_str()))
+            .collect::<BTreeMap<_, _>>();
+        let differing_notes = local
+            .iter()
+            .filter(|(id, note)| remote.get(id.as_str()).is_some_and(|hash| *hash != note.record_hash))
+            .count();
+        let baseline_available = has_safe_sync_baseline(&state);
+        let content_conflicts = remote_manifest
+            .notes
+            .iter()
+            .filter(|remote_note| {
+                let Some(local_note) = local.get(&remote_note.id) else {
+                    return false;
+                };
+                let Some(base) = state.note_content_hashes.get(&remote_note.id) else {
+                    return false;
+                };
+                local_note.content_hash != *base
+                    && remote_note.content_hash != *base
+                    && local_note.content_hash != remote_note.content_hash
+            })
+            .count();
+        let requires_choice = (!baseline_available && !local.is_empty() && !remote.is_empty())
+            || content_conflicts > 0;
+        Ok(SyncPreview {
+            baseline_available,
+            requires_choice,
+            local_notes: local.len(),
+            remote_notes: remote.len(),
+            differing_notes,
+            message: if !baseline_available && !local.is_empty() && !remote.is_empty() {
+                "这台电脑缺少上次同步基准。本地与云端都有内容；请选择以本机或云端为准，软件不会自动创建冲突副本。".into()
+            } else if content_conflicts > 0 {
+                format!("检测到 {content_conflicts} 篇笔记的正文被两端同时修改；请选择同步方向，软件不会自动创建冲突副本。")
+            } else {
+                "可以安全执行智能合并。".into()
+            },
+        })
+    })
+    .await
+    .map_err(|error| AppError::new("syncTask", error.to_string()))?
+}
+
+#[tauri::command]
 pub async fn sync_now(app: AppHandle, request: SyncRequest) -> Result<SyncResult, AppError> {
     let app_for_task = app.clone();
     let result = tauri::async_runtime::spawn_blocking(move || perform_sync(request))
@@ -556,6 +649,14 @@ fn perform_download() -> Result<SyncResult, AppError> {
             .iter()
             .map(|(id, note)| (id.clone(), note.record_hash.clone()))
             .collect(),
+        note_content_hashes: downloaded_notes
+            .iter()
+            .map(|(id, note)| (id.clone(), note.content_hash.clone()))
+            .collect(),
+        note_metadata_hashes: downloaded_notes
+            .iter()
+            .map(|(id, note)| (id.clone(), note_metadata_hash(&note.note)))
+            .collect(),
         image_hashes: remote_images
             .iter()
             .map(|(path, image)| (path.clone(), image.content_hash.clone()))
@@ -662,7 +763,33 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
         &workspace_root,
         legacy_remote,
     )?;
-    if should_protect_remote_from_empty_local(&local_notes, &remote_notes, &state.note_hashes) {
+    let baseline_available = has_safe_sync_baseline(&state);
+    if matches!(request.mode, SyncMode::Smart)
+        && !baseline_available
+        && !local_notes.is_empty()
+        && !remote_notes.is_empty()
+    {
+        return Err(AppError::new(
+            "syncBaselineMissing",
+            "未找到这台电脑上次同步的基准。本地和云端都有内容，为避免生成冲突副本，已暂停同步。请在设置中选择“以本机为准”或“以云端为准”。",
+        ));
+    }
+    let content_conflicts = count_content_conflicts(
+        &local_notes,
+        &remote_notes,
+        &state.note_content_hashes,
+    );
+    if matches!(request.mode, SyncMode::Smart) && content_conflicts > 0 {
+        return Err(AppError::new(
+            "syncContentConflict",
+            format!(
+                "检测到 {content_conflicts} 篇笔记的正文在本机和云端都被修改。为避免自动创建冲突副本，已暂停同步；请在设置中选择以本机或云端为准。"
+            ),
+        ));
+    }
+    if matches!(request.mode, SyncMode::Smart)
+        && should_protect_remote_from_empty_local(&local_notes, &remote_notes, &state.note_hashes)
+    {
         return Err(AppError::new(
             "syncEmptyLocalProtected",
             format!(
@@ -672,8 +799,47 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
             ),
         ));
     }
-    let (mut merged_notes, note_conflicts, note_downloads) =
-        merge_notes(&local_notes, &remote_notes, &state.note_hashes);
+    let (mut merged_notes, note_conflicts, note_downloads) = match request.mode {
+        SyncMode::Smart => merge_notes(
+            &local_notes,
+            &remote_notes,
+            &state.note_hashes,
+            &state.note_content_hashes,
+            &state.note_metadata_hashes,
+        ),
+        SyncMode::LocalWins => merge_notes(
+            &local_notes,
+            &remote_notes,
+            &remote_notes
+                .iter()
+                .map(|(id, note)| (id.clone(), note.record_hash.clone()))
+                .collect(),
+            &remote_notes
+                .iter()
+                .map(|(id, note)| (id.clone(), note.content_hash.clone()))
+                .collect(),
+            &remote_notes
+                .iter()
+                .map(|(id, note)| (id.clone(), note_metadata_hash(&note.note)))
+                .collect(),
+        ),
+        SyncMode::CloudWins => merge_notes(
+            &local_notes,
+            &remote_notes,
+            &local_notes
+                .iter()
+                .map(|(id, note)| (id.clone(), note.record_hash.clone()))
+                .collect(),
+            &local_notes
+                .iter()
+                .map(|(id, note)| (id.clone(), note.content_hash.clone()))
+                .collect(),
+            &local_notes
+                .iter()
+                .map(|(id, note)| (id.clone(), note_metadata_hash(&note.note)))
+                .collect(),
+        ),
+    };
     // Oversized PDFs are deliberately device-local. Keep them in the workspace
     // and layout, but never add them to the cloud manifest.
     merged_notes.extend(local_only_notes);
@@ -699,7 +865,12 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
         category_order: remote_manifest.category_order.clone(),
         note_order: remote_manifest.note_order.clone(),
     };
-    let mut merged_layout = merge_layout(&local_layout, &remote_layout, &state.layout_hash);
+    let layout_base = match request.mode {
+        SyncMode::Smart => state.layout_hash.clone(),
+        SyncMode::LocalWins => layout_hash(&remote_layout),
+        SyncMode::CloudWins => layout_hash(&local_layout),
+    };
+    let mut merged_layout = merge_layout(&local_layout, &remote_layout, &layout_base);
     normalize_layout(&mut merged_layout, &merged_notes);
 
     let mut local_images = scan_local_images(store.data_dir(), &workspace_root)?;
@@ -740,8 +911,19 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
     // A resolved daily-record conflict has just been written to disk. Re-scan
     // so the normal image/blob synchronizer uploads that merged value.
     local_images = scan_local_images(store.data_dir(), &workspace_root)?;
+    let image_base = match request.mode {
+        SyncMode::Smart => state.image_hashes.clone(),
+        SyncMode::LocalWins => remote_images
+            .iter()
+            .map(|(path, image)| (path.clone(), image.content_hash.clone()))
+            .collect(),
+        SyncMode::CloudWins => local_images
+            .iter()
+            .map(|(path, image)| (path.clone(), image.content_hash.clone()))
+            .collect(),
+    };
     let (mut merged_images, image_downloads) =
-        merge_images(&local_images, &remote_images, &state.image_hashes);
+        merge_images(&local_images, &remote_images, &image_base);
 
     for image in merged_images.values_mut() {
         let local_matches = local_images
@@ -921,6 +1103,16 @@ fn perform_sync(request: SyncRequest) -> Result<SyncResult, AppError> {
 
     let synced_at = Utc::now();
     state.note_hashes = merged_note_hashes;
+    state.note_content_hashes = merged_notes
+        .iter()
+        .filter(|(_, note)| !note.note.local_only)
+        .map(|(id, note)| (id.clone(), note.content_hash.clone()))
+        .collect();
+    state.note_metadata_hashes = merged_notes
+        .iter()
+        .filter(|(_, note)| !note.note.local_only)
+        .map(|(id, note)| (id.clone(), note_metadata_hash(&note.note)))
+        .collect();
     state.image_hashes = merged_image_hashes;
     state.layout_hash = merged_layout_hash;
     state.last_sync_at = Some(synced_at);
@@ -955,6 +1147,8 @@ fn merge_notes(
     local: &BTreeMap<String, SnapshotNote>,
     remote: &BTreeMap<String, SnapshotNote>,
     base: &BTreeMap<String, String>,
+    base_content: &BTreeMap<String, String>,
+    base_metadata: &BTreeMap<String, String>,
 ) -> (BTreeMap<String, SnapshotNote>, usize, usize) {
     let ids = local
         .keys()
@@ -981,6 +1175,38 @@ fn merge_notes(
                 result.insert(id, left.clone());
             }
             (Some(left), Some(right)) => {
+                if let (Some(base_content_hash), Some(base_metadata_hash)) =
+                    (base_content.get(&id), base_metadata.get(&id))
+                {
+                    let local_content_changed = &left.content_hash != base_content_hash;
+                    let remote_content_changed = &right.content_hash != base_content_hash;
+                    let local_metadata_changed = note_metadata_hash(&left.note) != *base_metadata_hash;
+                    let remote_metadata_changed = note_metadata_hash(&right.note) != *base_metadata_hash;
+
+                    if !(local_content_changed
+                        && remote_content_changed
+                        && left.content_hash != right.content_hash)
+                    {
+                        let content_source = if local_content_changed && !remote_content_changed {
+                            left
+                        } else if remote_content_changed && !local_content_changed {
+                            right
+                        } else {
+                            left
+                        };
+                        let metadata_source = if local_metadata_changed && !remote_metadata_changed {
+                            left
+                        } else if remote_metadata_changed && !local_metadata_changed {
+                            right
+                        } else if left.note.updated_at >= right.note.updated_at {
+                            left
+                        } else {
+                            right
+                        };
+                        result.insert(id, combine_note(content_source, metadata_source));
+                        continue;
+                    }
+                }
                 result.insert(id, left.clone());
                 let mut conflict = right.clone();
                 let conflict_id = Uuid::new_v4().to_string();
@@ -1009,6 +1235,53 @@ fn merge_notes(
         }
     }
     (result, conflicts, downloads)
+}
+
+fn combine_note(content_source: &SnapshotNote, metadata_source: &SnapshotNote) -> SnapshotNote {
+    let mut note = metadata_source.note.clone();
+    note.content = content_source.note.content.clone();
+    note.binary_data = content_source.note.binary_data.clone();
+    note.document_kind = content_source.note.document_kind;
+    let content_hash = content_source.content_hash.clone();
+    let record_hash = note_record_hash(&note, &content_hash);
+    SnapshotNote {
+        note,
+        content_hash,
+        record_hash,
+        blob_sha: String::new(),
+    }
+}
+
+fn has_sync_baseline(state: &SyncState) -> bool {
+    state.last_sync_at.is_some()
+        && (!state.note_hashes.is_empty() || !state.image_hashes.is_empty() || !state.layout_hash.is_empty())
+}
+
+fn has_safe_sync_baseline(state: &SyncState) -> bool {
+    has_sync_baseline(state)
+        && (state.note_hashes.is_empty()
+            || (!state.note_content_hashes.is_empty() && !state.note_metadata_hashes.is_empty()))
+}
+
+fn count_content_conflicts(
+    local: &BTreeMap<String, SnapshotNote>,
+    remote: &BTreeMap<String, SnapshotNote>,
+    base_content: &BTreeMap<String, String>,
+) -> usize {
+    local
+        .iter()
+        .filter(|(id, local_note)| {
+            let Some(remote_note) = remote.get(*id) else {
+                return false;
+            };
+            let Some(base) = base_content.get(*id) else {
+                return false;
+            };
+            local_note.content_hash != *base
+                && remote_note.content_hash != *base
+                && local_note.content_hash != remote_note.content_hash
+        })
+        .count()
 }
 
 fn should_protect_remote_from_empty_local(
@@ -1877,6 +2150,19 @@ fn note_record_hash(note: &Note, content_hash: &str) -> String {
     hash_bytes(value.to_string().as_bytes())
 }
 
+fn note_metadata_hash(note: &Note) -> String {
+    let value = json!({
+        "title": note.title,
+        "category": note.category,
+        "createdAt": note.created_at,
+        "updatedAt": note.updated_at,
+        "documentKind": note.document_kind,
+        "originalFileName": note.original_file_name,
+        "originalLocalOnly": note.original_local_only,
+    });
+    hash_bytes(value.to_string().as_bytes())
+}
+
 fn layout_hash(layout: &Layout) -> String {
     hash_bytes(
         serde_json::to_string(&json!({
@@ -2211,7 +2497,7 @@ mod tests {
         let local = BTreeMap::from([("one".into(), left.clone())]);
         let remote = BTreeMap::from([("one".into(), right.clone())]);
         let base = BTreeMap::from([("one".into(), left.record_hash)]);
-        let (merged, conflicts, _) = merge_notes(&local, &remote, &base);
+        let (merged, conflicts, _) = merge_notes(&local, &remote, &base, &BTreeMap::new(), &BTreeMap::new());
         assert_eq!(merged["one"].note.content, "new");
         assert_eq!(conflicts, 0);
     }
@@ -2222,8 +2508,45 @@ mod tests {
         let right = note("one", "right");
         let local = BTreeMap::from([("one".into(), left)]);
         let remote = BTreeMap::from([("one".into(), right)]);
-        let (merged, conflicts, _) = merge_notes(&local, &remote, &BTreeMap::new());
+        let (merged, conflicts, _) = merge_notes(
+            &local,
+            &remote,
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+        );
         assert_eq!(merged.len(), 2);
         assert_eq!(conflicts, 1);
+    }
+
+    #[test]
+    fn combines_a_local_folder_move_with_a_remote_content_edit() {
+        let base_note = note("one", "old");
+        let mut local_note = base_note.clone();
+        local_note.note.category = "本地整理".into();
+        local_note.record_hash = note_record_hash(&local_note.note, &local_note.content_hash);
+
+        let mut remote_note = base_note.clone();
+        remote_note.note.content = "云端新内容".into();
+        remote_note.content_hash = hash_bytes(remote_note.note.content.as_bytes());
+        remote_note.record_hash = note_record_hash(&remote_note.note, &remote_note.content_hash);
+
+        let local = BTreeMap::from([("one".into(), local_note)]);
+        let remote = BTreeMap::from([("one".into(), remote_note)]);
+        let records = BTreeMap::from([("one".into(), base_note.record_hash.clone())]);
+        let contents = BTreeMap::from([("one".into(), base_note.content_hash.clone())]);
+        let metadata = BTreeMap::from([("one".into(), note_metadata_hash(&base_note.note))]);
+
+        let (merged, conflicts, _) = merge_notes(&local, &remote, &records, &contents, &metadata);
+        assert_eq!(conflicts, 0);
+        assert_eq!(merged.len(), 1);
+        assert_eq!(merged["one"].note.content, "云端新内容");
+        assert_eq!(merged["one"].note.category, "本地整理");
+    }
+
+    #[test]
+    fn requires_a_choice_when_a_populated_workspace_has_no_baseline() {
+        let state = SyncState::default();
+        assert!(!has_sync_baseline(&state));
     }
 }

@@ -18,6 +18,18 @@ export interface GitSyncStatus {
 export interface SyncRequest {
   categoryOrder: string[];
   noteOrder: string[];
+  mode?: SyncMode;
+}
+
+export type SyncMode = "smart" | "localWins" | "cloudWins";
+
+export interface SyncPreview {
+  baselineAvailable: boolean;
+  requiresChoice: boolean;
+  localNotes: number;
+  remoteNotes: number;
+  differingNotes: number;
+  message: string;
 }
 
 export interface RemoteWorkspace {

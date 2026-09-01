@@ -3,6 +3,8 @@ import type {
   GitSyncSettings,
   GitSyncStatus,
   RemoteWorkspace,
+  SyncMode,
+  SyncPreview,
   SyncRequest,
   SyncResult,
 } from "./types";
@@ -36,6 +38,14 @@ export function listSyncWorkspaces(): Promise<RemoteWorkspace[]> {
 
 export function syncNow(request: SyncRequest = readLocalLayout()): Promise<SyncResult> {
   return invoke("sync_now", { request });
+}
+
+export function previewSync(): Promise<SyncPreview> {
+  return invoke("sync_preview");
+}
+
+export function syncWithMode(mode: SyncMode): Promise<SyncResult> {
+  return syncNow({ ...readLocalLayout(), mode });
 }
 
 export function downloadSyncWorkspace(): Promise<SyncResult> {

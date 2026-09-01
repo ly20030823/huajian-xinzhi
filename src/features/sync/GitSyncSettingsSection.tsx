@@ -5,9 +5,11 @@ import {
   downloadSyncWorkspace,
   getSyncStatus,
   listSyncWorkspaces,
+  previewSync,
   saveSyncSettings,
   setSyncToken,
   syncNow,
+  syncWithMode,
   testSyncConnection,
 } from "./api";
 import { assertSyncStatus } from "./syncSettingsState";
@@ -16,6 +18,8 @@ import type {
   GitSyncStatus,
   RemoteWorkspace,
   SyncResult,
+  SyncMode,
+  SyncPreview,
 } from "./types";
 
 type ActionState =
@@ -44,6 +48,7 @@ export function GitSyncSettingsSection() {
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [remoteWorkspaces, setRemoteWorkspaces] = useState<RemoteWorkspace[]>([]);
+  const [syncPreview, setSyncPreview] = useState<SyncPreview | null>(null);
 
   useEffect(() => {
     void getSyncStatus()
@@ -103,10 +108,35 @@ export function GitSyncSettingsSection() {
     clearMessage();
     try {
       await persist();
+      const preview = await previewSync();
+      if (preview.requiresChoice) {
+        setSyncPreview(preview);
+        showSuccess(preview.message);
+        return;
+      }
       const result = await syncNow();
       const next = await getSyncStatus();
       setStatus(next);
       showSuccess(describeResult(result));
+    } catch (error) {
+      showError(error);
+    } finally {
+      setAction("idle");
+    }
+  };
+
+  const runSelectedSync = async (mode: SyncMode) => {
+    const label = mode === "localWins" ? "以本机为准" : "以云端为准";
+    if (!window.confirm(`${label}会覆盖另一端对应内容，并重新建立同步基准。GitHub 历史仍可恢复。是否继续？`)) return;
+    setAction("syncing");
+    clearMessage();
+    try {
+      await persist();
+      const result = await syncWithMode(mode);
+      const next = await getSyncStatus();
+      setStatus(next);
+      setSyncPreview(null);
+      showSuccess(`${label}同步完成。${describeResult(result)}`);
     } catch (error) {
       showError(error);
     } finally {
@@ -383,6 +413,23 @@ export function GitSyncSettingsSection() {
           </button>
         )}
       </div>
+
+      {syncPreview && (
+        <div className="rounded-xl border border-amber-400/35 bg-amber-50/55 p-2.5 text-[10px] leading-relaxed text-ink-faint">
+          <p className="font-medium text-ink-soft">需要选择同步方向</p>
+          <p className="mt-1">本机 {syncPreview.localNotes} 篇 · 云端 {syncPreview.remoteNotes} 篇 · 内容不同 {syncPreview.differingNotes} 篇。</p>
+          <p className="mt-1">
+            {syncPreview.baselineAvailable
+              ? "检测到双方正文都有修改。为避免自动生成冲突副本，请确认哪一端是最终版本。"
+              : "未找到本机的上次同步基准。为避免自动生成冲突副本，请确认哪一端是最终版本。"}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <ActionButton disabled={busy} onClick={() => void runSelectedSync("localWins")}>以本机为准</ActionButton>
+            <ActionButton disabled={busy} onClick={() => void runSelectedSync("cloudWins")}>以云端为准</ActionButton>
+            <ActionButton disabled={busy} onClick={() => setSyncPreview(null)}>暂不处理</ActionButton>
+          </div>
+        </div>
+      )}
 
       {(message || status?.lastSyncAt || status?.lastError) && (
         <div
