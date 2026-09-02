@@ -36,6 +36,11 @@ type BusyAction = "settings" | "checking" | "cdk" | "download" | "cancel" | "ins
 
 const UPDATE_REPOSITORY_URL = "https://github.com/ly20030823/huajian-xinzhi";
 
+function isLinuxDesktop(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Linux/i.test(`${navigator.platform} ${navigator.userAgent}`);
+}
+
 interface UpdateSettingsSectionProps {
   initialSettings?: UpdateSettings;
   initialStatus?: UpdateState;
@@ -442,10 +447,12 @@ export function UpdateSettingsSection({
   };
 
   const handleInstall = async () => {
+    const linuxDesktop = isLinuxDesktop();
     const confirmed = window.confirm(
-      t("settings.update.confirmInstall", {
-        defaultValue:
-          "应用会先保存所有未保存内容，然后关闭、安装更新，并在完成后重新打开。是否继续？",
+      t(linuxDesktop ? "settings.update.confirmInstallLinux" : "settings.update.confirmInstall", {
+        defaultValue: linuxDesktop
+          ? "应用会先保存所有未保存内容，然后打开 Ubuntu 系统安装器。是否继续？"
+          : "应用会先保存所有未保存内容，然后关闭、安装更新，并在完成后重新打开。是否继续？",
       }),
     );
     if (!confirmed) return;
@@ -804,9 +811,16 @@ function renderDownloadCard({
         <div className="space-y-1.5 rounded-xl bg-cloud/55 px-2.5 py-2">
           <p className="text-[10px] font-mono text-ink-ghost">
             {status.status === "installing"
-              ? t("settings.update.installPreparing", {
-                  defaultValue: "正在准备退出应用并安装更新...",
-                })
+              ? t(
+                  isLinuxDesktop()
+                    ? "settings.update.installPreparingLinux"
+                    : "settings.update.installPreparing",
+                  {
+                    defaultValue: isLinuxDesktop()
+                      ? "正在校验安装包并打开 Ubuntu 系统安装器..."
+                      : "正在准备退出应用并安装更新...",
+                  },
+                )
               : t("settings.update.installScheduled", {
                   defaultValue: "检测到旧版待安装状态，请重新点击“安装并重启”完成替换",
                 })}
@@ -860,7 +874,14 @@ function renderDownloadCard({
               ? t("settings.update.installRetry", {
                   defaultValue: "重新尝试安装",
                 })
-              : t("settings.update.install", { defaultValue: "安装并重启" })}
+              : t(
+                  isLinuxDesktop()
+                    ? "settings.update.openSystemInstaller"
+                    : "settings.update.install",
+                  {
+                    defaultValue: isLinuxDesktop() ? "打开系统安装器" : "安装并重启",
+                  },
+                )}
           </button>
         ) : null}
       </div>
@@ -967,6 +988,12 @@ function getInstallSuccessMessage(
   if (result.mode === "test") {
     return tr("settings.update.installValidatedTest", {
       defaultValue: "安装 helper 已完成 test 模式校验",
+    });
+  }
+
+  if (result.mode === "externalInstaller") {
+    return tr("settings.update.externalInstallerOpened", {
+      defaultValue: "已打开 Ubuntu 系统安装器，请在系统窗口中确认升级",
     });
   }
 

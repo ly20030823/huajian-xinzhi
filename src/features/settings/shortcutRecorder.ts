@@ -1,4 +1,4 @@
-export type ShortcutPlatform = "mac" | "windows";
+export type ShortcutPlatform = "mac" | "windows" | "linux";
 
 interface ParsedShortcut {
   ctrl: boolean;
@@ -26,8 +26,14 @@ const MAC_KEY_DISPLAY_NAMES: Record<string, string> = {
 };
 
 export function shortcutPlatform(): ShortcutPlatform {
-  if (typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform)) {
+  const platformDescription =
+    typeof navigator === "undefined" ? "" : `${navigator.platform} ${navigator.userAgent}`;
+  if (/Mac|iPhone|iPad/.test(platformDescription)) {
     return "mac";
+  }
+
+  if (/Linux/.test(platformDescription)) {
+    return "linux";
   }
 
   return "windows";

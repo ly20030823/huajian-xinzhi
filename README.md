@@ -15,6 +15,7 @@
 [![Version](https://img.shields.io/github/v/release/ly20030823/huajian-xinzhi)](https://github.com/ly20030823/huajian-xinzhi/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-2f6fed?logo=windows)](https://github.com/ly20030823/huajian-xinzhi/releases/latest)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?logo=ubuntu)](https://github.com/ly20030823/huajian-xinzhi/releases/latest)
 
 </div>
 
@@ -50,10 +51,12 @@
 ## 下载与安装
 
 前往 [GitHub Releases](https://github.com/ly20030823/huajian-xinzhi/releases/latest)
-下载名字中带有 `x64-setup.exe` 的文件，双击后按安装向导完成安装。
+Windows 10 / 11 用户下载名字中带有 `x64-setup.exe` 的文件，双击后按安装向导完成安装。
 
-目前主要维护 64 位 Windows 10 / Windows 11。安装版支持在软件内检查、下载
-和安装后续更新；便携版需要手动替换。
+Ubuntu 24.04（Intel/AMD 64 位）用户下载名字中带有 `amd64.deb` 的文件，双击后
+使用系统“应用中心”安装。Windows 安装版和 Ubuntu `.deb` 版都支持在软件内检查
+并下载后续更新；Ubuntu 会在校验安装包后打开系统安装器，由用户确认升级。
+Windows 便携版仍需手动替换。
 
 > 当前安装包尚未使用商业代码签名证书，Windows 可能显示“未知发布者”。
 > 请从本仓库 Release 页面下载，并在确认来源后继续安装。
@@ -66,7 +69,8 @@
 
 ## 从源码构建
 
-需要 Node.js、Rust、Microsoft C++ Build Tools 和 Windows WebView2。
+需要 Node.js 和 Rust。Windows 还需要 Microsoft C++ Build Tools 与 WebView2；
+Ubuntu 24.04 需要 WebKitGTK、AppIndicator 等 Tauri 系统依赖。
 
 ```bash
 npm install
@@ -77,6 +81,15 @@ npm run tauri dev
 
 ```bat
 build-installer.cmd
+```
+
+在 Ubuntu 24.04 生成 `.deb` 安装包：
+
+```bash
+sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
+  libxdo-dev libssl-dev libayatana-appindicator3-dev libdbus-1-dev librsvg2-dev
+npm ci
+npm run tauri build -- --bundles deb
 ```
 
 ## 项目来源与许可证

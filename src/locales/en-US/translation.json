@@ -469,6 +469,7 @@
         "installSaveFailed": "Autosaving open content failed before install. Resolve it and try again.",
         "installSaveTimedOut": "Timed out waiting for open windows to save before install",
         "installSpawnFailed": "Failed to launch update helper",
+        "linuxInstallerOpenFailed": "Could not open Ubuntu's system installer. Open the .deb file from the download folder manually.",
         "installStateWriteFailed": "Could not write the install state file",
         "installTargetMissing": "The current install target no longer exists",
         "installTaskJoinFailed": "Install task failed to complete",
@@ -506,6 +507,7 @@
         "versionInvalid": "Invalid version format"
       },
       "confirmInstall": "The app will save open content, close, install the update, and reopen when it is done. Continue?",
+      "confirmInstallLinux": "The app will save open content and then open Ubuntu's system installer. Continue?",
       "download": "Download Update",
       "downloaded": "Version {{version}} has finished downloading",
       "interval": {
@@ -518,9 +520,12 @@
       "installFailed": "The latest install attempt failed. Review the log and retry or download again.",
       "installFailedTitle": "Update Installation Failed",
       "installPreparing": "Preparing to exit the app and install the update...",
+      "installPreparingLinux": "Verifying the package and opening Ubuntu's system installer...",
       "installRetry": "Retry Install",
       "installScheduled": "A legacy pending-install state was found. Click Install & Restart again to finish replacing the app.",
       "installValidated": "The app will close to install the update and reopen when it is done.",
+      "externalInstallerOpened": "Ubuntu's system installer is open. Confirm the upgrade in that window.",
+      "openSystemInstaller": "Open System Installer",
       "latestVersion": "Pending version: {{version}}",
       "loading": "Reading update settings...",
       "mirrorChyan": {

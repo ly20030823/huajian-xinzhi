@@ -262,6 +262,10 @@ export function getUpdateErrorMessage(error: unknown, translate: TFunction = t):
       return translate("settings.update.error.installSpawnFailed", {
         defaultValue: "启动更新安装助手失败",
       });
+    case "updateLinuxInstallerOpenFailed":
+      return translate("settings.update.error.linuxInstallerOpenFailed", {
+        defaultValue: "无法打开 Ubuntu 系统安装器，请在下载目录中手动打开 .deb 文件",
+      });
     case "updateInstallSaveFailed":
       return translate("settings.update.error.installSaveFailed", {
         defaultValue: "安装前自动保存失败，请先处理当前未保存内容后重试",

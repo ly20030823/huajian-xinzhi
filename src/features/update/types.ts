@@ -6,7 +6,7 @@ export type DownloadSourceUsed = "mirrorChyan" | "github";
 
 export type UpdateChannel = "stable" | "beta";
 
-export type UpdateInstallMode = "apply" | "test";
+export type UpdateInstallMode = "apply" | "test" | "externalInstaller";
 
 export type UpdateStatus =
   | "idle"

@@ -153,6 +153,12 @@ where
             current_state.latest_version,
             self.helper_mode
         );
+        let platform = self.platform_override.clone().unwrap_or_else(|| {
+            platform::current_platform_with_version(current_state.current_version.clone())
+        });
+        if platform.install_kind == super::types::InstallKind::LinuxDeb {
+            return self.open_linux_deb_installer(paths, current_state, &platform);
+        }
         let request = match self.prepare_request(paths, &current_state) {
             Ok(request) => {
                 debug_log!(
@@ -224,6 +230,55 @@ where
                 Err(error)
             }
         }
+    }
+
+    fn open_linux_deb_installer(
+        &self,
+        paths: &UpdatePaths,
+        current_state: UpdateStateDto,
+        platform: &PlatformInfo,
+    ) -> Result<UpdateInstallResult, AppError> {
+        platform.ensure_in_app_updates_supported()?;
+        if !matches!(
+            current_state.status,
+            UpdateStatus::Downloaded | UpdateStatus::Failed
+        ) {
+            return Err(errors::app_error(
+                "updateInstallNotReady",
+                "当前没有可安装的更新包",
+            ));
+        }
+
+        let asset_path = current_state
+            .asset_path
+            .as_deref()
+            .map(PathBuf::from)
+            .ok_or_else(|| errors::app_error("updateInstallNotReady", "当前没有可安装的更新包"))?;
+        validate_linux_deb_asset(&asset_path, &current_state)?;
+
+        if self.helper_mode == helper::UpdateHelperMode::Test {
+            return Ok(UpdateInstallResult {
+                status: UpdateStatus::Downloaded,
+                log_path: None,
+                mode: UpdateInstallMode::Test,
+            });
+        }
+
+        open_linux_deb_with_system_installer(&asset_path)?;
+        let mut next_state = current_state;
+        next_state.status = UpdateStatus::Downloaded;
+        next_state.install_mode = Some(UpdateInstallMode::ExternalInstaller);
+        next_state.install_started_at = Some(Utc::now());
+        next_state.install_scheduled_at = None;
+        next_state.install_log_path = None;
+        next_state.last_error = None;
+        state::save(paths, &next_state)?;
+
+        Ok(UpdateInstallResult {
+            status: UpdateStatus::Downloaded,
+            log_path: None,
+            mode: UpdateInstallMode::ExternalInstaller,
+        })
     }
 
     fn prepare_request(
@@ -393,8 +448,97 @@ fn resolve_install_target(platform: &PlatformInfo) -> Result<PathBuf, AppError> 
             .map(PathBuf::from)
             .ok_or_else(errors::unsupported_platform),
         super::types::InstallKind::WindowsPortable => Err(errors::portable_manual_only()),
+        super::types::InstallKind::LinuxDeb => Err(errors::unsupported_platform()),
         super::types::InstallKind::Unknown => Err(errors::unsupported_platform()),
     }
+}
+
+fn validate_linux_deb_asset(path: &Path, current_state: &UpdateStateDto) -> Result<(), AppError> {
+    if !path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("deb"))
+    {
+        return Err(errors::app_error(
+            "updateInstallUnsupportedKind",
+            "下载的更新包不是有效的 Debian 安装包",
+        ));
+    }
+
+    let metadata = fs::metadata(path).map_err(|error| {
+        errors::app_error(
+            "updateInstallAssetMissing",
+            format!("更新包文件不存在或无法读取：{error}"),
+        )
+    })?;
+    if current_state
+        .asset_size
+        .is_some_and(|expected_size| metadata.len() != expected_size)
+    {
+        return Err(errors::app_error(
+            "updateInstallAssetSizeMismatch",
+            "更新包大小校验失败，请重新下载",
+        ));
+    }
+
+    let expected_hash = current_state.asset_sha256.as_deref().ok_or_else(|| {
+        errors::app_error(
+            "updateInstallAssetHashMismatch",
+            "更新包缺少完整性校验信息，请重新下载",
+        )
+    })?;
+    let actual_hash = super::sha256_hex(path).map_err(|error| {
+        errors::app_error(
+            "updateInstallAssetHashMismatch",
+            format!("无法校验更新包：{error}"),
+        )
+    })?;
+    if !actual_hash.eq_ignore_ascii_case(expected_hash.trim()) {
+        return Err(errors::app_error(
+            "updateInstallAssetHashMismatch",
+            "更新包完整性校验失败，请重新下载",
+        ));
+    }
+
+    Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn open_linux_deb_with_system_installer(path: &Path) -> Result<(), AppError> {
+    let candidates: [(&str, &[&str]); 4] = [
+        ("/usr/bin/xdg-open", &[]),
+        ("/usr/bin/gio", &["open"]),
+        ("xdg-open", &[]),
+        ("gio", &["open"]),
+    ];
+    let mut failures = Vec::new();
+    for (program, prefix_args) in candidates {
+        match Command::new(program)
+            .args(prefix_args)
+            .arg(path)
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        {
+            Ok(_) => return Ok(()),
+            Err(error) => failures.push(format!("{program}: {error}")),
+        }
+    }
+
+    Err(errors::with_detail(
+        errors::app_error(
+            "updateLinuxInstallerOpenFailed",
+            "无法打开 Ubuntu 系统安装器，请在下载目录中手动打开 .deb 文件",
+        ),
+        "reason",
+        failures.join(" | "),
+    ))
+}
+
+#[cfg(not(target_os = "linux"))]
+fn open_linux_deb_with_system_installer(_path: &Path) -> Result<(), AppError> {
+    Err(errors::unsupported_platform())
 }
 
 fn resolve_macos_bundle_path(platform: &PlatformInfo) -> Option<PathBuf> {
@@ -949,6 +1093,36 @@ mod tests {
         }
     }
 
+    fn downloaded_deb_state(paths: &UpdatePaths) -> UpdateStateDto {
+        let asset_path = paths
+            .downloads_dir()
+            .join("1.1.5")
+            .join("huajian-xinzhi_1.1.5_amd64.deb");
+        fs::create_dir_all(asset_path.parent().expect("asset parent")).expect("create asset dir");
+        fs::write(&asset_path, b"deb package fixture").expect("write deb fixture");
+        let asset_hash = super::super::sha256_hex(&asset_path).expect("hash deb fixture");
+
+        UpdateStateDto {
+            status: UpdateStatus::Downloaded,
+            current_version: "1.1.4".into(),
+            latest_version: Some("1.1.5".into()),
+            channel: UpdateChannel::Stable,
+            asset_name: Some("huajian-xinzhi_1.1.5_amd64.deb".into()),
+            asset_path: Some(asset_path.to_string_lossy().to_string()),
+            asset_sha256: Some(asset_hash),
+            asset_size: Some(19),
+            asset_url: None,
+            source: Some(DownloadSourceUsed::Github),
+            checked_at: Some(Utc::now()),
+            downloaded_at: Some(Utc::now()),
+            install_log_path: None,
+            install_mode: None,
+            install_started_at: None,
+            install_scheduled_at: None,
+            last_error: None,
+        }
+    }
+
     fn platform_with_bundle(bundle: &Path) -> PlatformInfo {
         PlatformInfo {
             os: platform::Os::Macos,
@@ -1055,6 +1229,23 @@ mod tests {
         assert_eq!(saved.status, UpdateStatus::Downloaded);
         assert_eq!(saved.install_mode, Some(UpdateInstallMode::Test));
         assert!(saved.install_scheduled_at.is_none());
+    }
+
+    #[test]
+    fn validates_linux_deb_before_opening_system_installer() {
+        let paths = test_paths("linux-deb-validation");
+        let current_state = downloaded_deb_state(&paths);
+        let asset_path = PathBuf::from(current_state.asset_path.as_deref().expect("asset path"));
+
+        validate_linux_deb_asset(&asset_path, &current_state).expect("valid deb package");
+
+        fs::write(&asset_path, b"tampered deb package").expect("tamper deb fixture");
+        let error = validate_linux_deb_asset(&asset_path, &current_state)
+            .expect_err("tampered package must be rejected");
+        assert!(matches!(
+            error.code.as_str(),
+            "updateInstallAssetSizeMismatch" | "updateInstallAssetHashMismatch"
+        ));
     }
 
     #[test]

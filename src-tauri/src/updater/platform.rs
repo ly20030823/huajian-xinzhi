@@ -16,6 +16,7 @@ use std::process::Command;
 pub enum Os {
     Windows,
     Macos,
+    Linux,
     Unsupported,
 }
 
@@ -66,7 +67,9 @@ impl PlatformInfo {
         }
 
         match self.install_kind {
-            InstallKind::WindowsNsis | InstallKind::MacosAppBundle => Ok(()),
+            InstallKind::WindowsNsis | InstallKind::MacosAppBundle | InstallKind::LinuxDeb => {
+                Ok(())
+            }
             InstallKind::WindowsPortable => Err(errors::portable_manual_only()),
             InstallKind::Unknown => Err(errors::unsupported_platform()),
         }
@@ -120,6 +123,7 @@ fn current_os() -> Os {
     match env::consts::OS {
         "windows" => Os::Windows,
         "macos" => Os::Macos,
+        "linux" => Os::Linux,
         _ => Os::Unsupported,
     }
 }
@@ -156,6 +160,18 @@ fn detect_install_kind(os: Os, current_exe: Option<&Path>) -> InstallKind {
                 InstallKind::WindowsNsis
             } else {
                 InstallKind::WindowsPortable
+            }
+        }
+        Os::Linux => {
+            let Some(path) = current_exe else {
+                return InstallKind::Unknown;
+            };
+            let normalized = path.to_string_lossy();
+            if normalized.contains("/target/debug/") || normalized.contains("/target/release/") {
+                InstallKind::Unknown
+            } else {
+                // Linux releases are intentionally distributed only as Debian packages.
+                InstallKind::LinuxDeb
             }
         }
         Os::Unsupported => InstallKind::Unknown,
@@ -271,13 +287,15 @@ pub(crate) fn infer_asset_from_filename(name: &str, url: &str, size: u64) -> Opt
 
     let arch = if lower.contains("aarch64") || lower.contains("arm64") {
         Arch::Aarch64
-    } else if lower.contains("x64") || lower.contains("x86_64") {
+    } else if lower.contains("x64") || lower.contains("x86_64") || lower.contains("amd64") {
         Arch::X86_64
     } else {
         return None;
     };
 
-    let (os, kind) = if lower.ends_with(".dmg") {
+    let (os, kind) = if lower.ends_with(".deb") {
+        (Os::Linux, InstallKind::LinuxDeb)
+    } else if lower.ends_with(".dmg") {
         (Os::Macos, InstallKind::MacosAppBundle)
     } else if lower.ends_with(".msi") || lower.ends_with("-setup.exe") || lower.contains("setup") {
         (Os::Windows, InstallKind::WindowsNsis)
@@ -392,6 +410,35 @@ mod tests {
         assert!(
             infer_asset_from_filename("app_1.0.5.deb", "https://example.com/app.deb", 100)
                 .is_none()
+        );
+    }
+
+    #[test]
+    fn infers_linux_amd64_deb() {
+        let asset = infer_asset_from_filename(
+            "huajian-xinzhi_1.1.5_amd64.deb",
+            "https://github.com/example/releases/download/v1.1.5/app.deb",
+            12_000,
+        )
+        .expect("should match deb");
+
+        assert_eq!(asset.os, Os::Linux);
+        assert_eq!(asset.arch, Arch::X86_64);
+        assert_eq!(asset.kind, InstallKind::LinuxDeb);
+    }
+
+    #[test]
+    fn detects_installed_linux_deb_and_ignores_dev_binary() {
+        assert_eq!(
+            detect_install_kind(Os::Linux, Some(Path::new("/usr/bin/floral-notepaper"))),
+            InstallKind::LinuxDeb
+        );
+        assert_eq!(
+            detect_install_kind(
+                Os::Linux,
+                Some(Path::new("/home/test/app/target/debug/floral-notepaper"))
+            ),
+            InstallKind::Unknown
         );
     }
 

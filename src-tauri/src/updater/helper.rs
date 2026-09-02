@@ -758,6 +758,14 @@ fn apply_update(
         InstallKind::MacosAppBundle => install_macos_bundle(command, log),
         InstallKind::WindowsPortable => install_windows_portable(command, log),
         InstallKind::WindowsNsis => install_windows_installer(command, log),
+        InstallKind::LinuxDeb => {
+            writeln!(
+                log,
+                "Linux deb packages must be opened by the desktop installer"
+            )
+            .ok();
+            Err(UpdateHelperExitCode::UnsupportedInstallKind)
+        }
         InstallKind::Unknown => {
             write_log_line(log, "unsupported install kind")?;
             Err(UpdateHelperExitCode::UnsupportedInstallKind)
@@ -3200,6 +3208,7 @@ fn install_kind_as_str(kind: &InstallKind) -> &'static str {
         InstallKind::WindowsNsis => "windows-nsis",
         InstallKind::WindowsPortable => "windows-portable",
         InstallKind::MacosAppBundle => "macos-app-bundle",
+        InstallKind::LinuxDeb => "linux-deb",
         InstallKind::Unknown => "unknown",
     }
 }
@@ -3209,6 +3218,7 @@ fn parse_install_kind(value: &str) -> Option<InstallKind> {
         "windows-nsis" | "windowsNsis" => Some(InstallKind::WindowsNsis),
         "windows-portable" | "windowsPortable" => Some(InstallKind::WindowsPortable),
         "macos-app-bundle" | "macosAppBundle" => Some(InstallKind::MacosAppBundle),
+        "linux-deb" | "linuxDeb" => Some(InstallKind::LinuxDeb),
         "unknown" => Some(InstallKind::Unknown),
         _ => None,
     }

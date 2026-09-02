@@ -51,6 +51,7 @@ pub enum UpdateStatus {
 pub enum UpdateInstallMode {
     Apply,
     Test,
+    ExternalInstaller,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -67,6 +68,7 @@ pub enum InstallKind {
     WindowsNsis,
     WindowsPortable,
     MacosAppBundle,
+    LinuxDeb,
     Unknown,
 }
 

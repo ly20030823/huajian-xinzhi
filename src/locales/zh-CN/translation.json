@@ -469,6 +469,7 @@
         "installSaveFailed": "安装前自动保存失败，请先处理当前未保存内容后重试",
         "installSaveTimedOut": "等待窗口保存未保存内容超时，请稍后重试",
         "installSpawnFailed": "启动更新安装助手失败",
+        "linuxInstallerOpenFailed": "无法打开 Ubuntu 系统安装器，请在下载目录中手动打开 .deb 文件",
         "installStateWriteFailed": "无法写入安装状态文件",
         "installTargetMissing": "当前安装目标不存在，无法继续",
         "installTaskJoinFailed": "安装任务执行失败",
@@ -506,6 +507,7 @@
         "versionInvalid": "版本号格式无效"
       },
       "confirmInstall": "应用会先保存所有未保存内容，然后关闭、安装更新，并在完成后重新打开。是否继续？",
+      "confirmInstallLinux": "应用会先保存所有未保存内容，然后打开 Ubuntu 系统安装器。是否继续？",
       "download": "下载更新",
       "downloaded": "版本 {{version}} 已下载完成",
       "interval": {
@@ -518,9 +520,12 @@
       "installFailed": "最近一次安装失败，可查看日志后重试或重新下载",
       "installFailedTitle": "安装更新失败",
       "installPreparing": "正在准备退出应用并安装更新...",
+      "installPreparingLinux": "正在校验安装包并打开 Ubuntu 系统安装器...",
       "installRetry": "重新尝试安装",
       "installScheduled": "检测到旧版待安装状态，请重新点击“安装并重启”完成替换",
       "installValidated": "即将退出应用并安装更新，完成后会自动重新打开",
+      "externalInstallerOpened": "已打开 Ubuntu 系统安装器，请在系统窗口中确认升级",
+      "openSystemInstaller": "打开系统安装器",
       "latestVersion": "待更新版本：{{version}}",
       "loading": "正在读取更新设置...",
       "mirrorChyan": {

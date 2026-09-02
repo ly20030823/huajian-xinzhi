@@ -443,6 +443,7 @@
         "installSaveFailed": "安裝前自動儲存失敗，請先處理目前未儲存內容後重試",
         "installSaveTimedOut": "等待視窗儲存未儲存內容逾時，請稍後重試",
         "installSpawnFailed": "啟動更新安裝助手失敗",
+        "linuxInstallerOpenFailed": "無法開啟 Ubuntu 系統安裝器，請在下載目錄中手動開啟 .deb 檔案",
         "installWaitTimedOut": "等待應用退出逾時，請重新安裝",
         "installUnsupportedKind": "目前安裝型態暫不支援應用內安裝",
         "installAssetExtractFailed": "無法解包更新資源，請重新下載後重試",
@@ -483,6 +484,7 @@
         "githubNoAssets": "GitHub Release 中沒有找到可用資產"
       },
       "confirmInstall": "應用會先儲存所有未儲存內容，然後關閉、安裝更新，並在完成後重新打開。是否繼續？",
+      "confirmInstallLinux": "應用會先儲存所有未儲存內容，然後開啟 Ubuntu 系統安裝器。是否繼續？",
       "download": "下載更新",
       "downloaded": "版本 {{version}} 已下載完成",
       "interval": {
@@ -495,9 +497,12 @@
       "installFailed": "最近一次安裝失敗，可查看日誌後重試或重新下載",
       "installFailedTitle": "安裝更新失敗",
       "installPreparing": "正在準備退出應用並安裝更新...",
+      "installPreparingLinux": "正在驗證安裝包並開啟 Ubuntu 系統安裝器...",
       "installRetry": "重新嘗試安裝",
       "installScheduled": "偵測到舊版待安裝狀態，請重新點擊「安裝並重新啟動」完成替換",
       "installValidated": "應用即將退出並安裝更新，完成後會自動重新打開",
+      "externalInstallerOpened": "已開啟 Ubuntu 系統安裝器，請在系統視窗中確認升級",
+      "openSystemInstaller": "開啟系統安裝器",
       "latestVersion": "待更新版本：{{version}}",
       "loading": "正在讀取更新設定...",
       "mirrorChyan": {

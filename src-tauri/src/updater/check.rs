@@ -507,6 +507,7 @@ fn mirror_chyan_os_param(os: &platform::Os) -> &'static str {
     match os {
         platform::Os::Windows => "windows",
         platform::Os::Macos => "darwin",
+        platform::Os::Linux => "linux",
         platform::Os::Unsupported => "unknown",
     }
 }
@@ -1340,10 +1341,7 @@ mod tests {
             .evaluate(&settings, &test_context(InstallKind::MacosAppBundle))
             .expect("available update should have recommended asset url");
 
-        assert_eq!(
-            result.recommended_source,
-            Some(DownloadSourceUsed::Github)
-        );
+        assert_eq!(result.recommended_source, Some(DownloadSourceUsed::Github));
         assert_eq!(next_state.source, Some(DownloadSourceUsed::Github));
         assert_eq!(
             result.asset_url.as_deref(),
