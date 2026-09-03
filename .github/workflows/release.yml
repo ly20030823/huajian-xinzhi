@@ -92,7 +92,7 @@ jobs:
         run: node scripts/set-version.mjs "${GITHUB_REF_NAME#v}"
 
       - name: Build Ubuntu deb package
-        run: npm run tauri build -- --bundles deb
+        run: npm run tauri build -- --config src-tauri/tauri.linux.conf.json --bundles deb
 
       - name: Prepare Ubuntu release file
         shell: bash
