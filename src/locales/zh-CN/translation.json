@@ -508,7 +508,7 @@
       },
       "confirmInstall": "应用会先保存所有未保存内容，然后关闭、安装更新，并在完成后重新打开。是否继续？",
       "confirmInstallLinux": "应用会先保存所有未保存内容，然后打开 Ubuntu 系统安装器。是否继续？",
-      "download": "下载更新",
+      "download": "自动下载安装更新",
       "downloaded": "版本 {{version}} 已下载完成",
       "interval": {
         "custom": "{{hours}} 小时",

@@ -94,6 +94,9 @@ jobs:
       - name: Build Ubuntu deb package
         run: npm run tauri build -- --config src-tauri/tauri.linux.conf.json --bundles deb
 
+      - name: Test concurrent JSON writes
+        run: cargo test --manifest-path src-tauri/Cargo.toml --release json_io::tests -- --nocapture
+
       - name: Prepare Ubuntu release file
         shell: bash
         run: |

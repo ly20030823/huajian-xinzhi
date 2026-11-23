@@ -9,10 +9,7 @@ import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import type { MDXEditorMethods } from "@mdxeditor/editor";
 import { AboutPanel } from "./AboutPanel";
 import { ActivityPanel } from "./ActivityPanel";
-import {
-  exportMarkdownNote,
-  exportPdfDocument,
-} from "../features/importExport/api";
+import { exportMarkdownNote, exportPdfDocument } from "../features/importExport/api";
 import {
   getOriginalWordPath,
   getPdfBytes,
@@ -139,15 +136,15 @@ function DocumentTypeBadges({ note }: { note: NoteMetadata }) {
     <span className="ml-1.5 inline-flex shrink-0 items-center gap-1 align-middle">
       <span
         className={`rounded px-1 py-px text-[8px] font-semibold tracking-wide ${
-          kind === "pdf"
-            ? "bg-red-100 text-red-500"
-            : "bg-blue-100 text-blue-600"
+          kind === "pdf" ? "bg-red-100 text-red-500" : "bg-blue-100 text-blue-600"
         }`}
       >
         {kind === "pdf" ? "PDF" : "DOCX"}
       </span>
       {note.localOnly ? (
-        <span className="rounded bg-paper-deep/55 px-1 py-px text-[8px] text-ink-ghost">仅本机</span>
+        <span className="rounded bg-paper-deep/55 px-1 py-px text-[8px] text-ink-ghost">
+          仅本机
+        </span>
       ) : null}
       {kind === "docx" && note.originalLocalOnly ? (
         <span className="rounded bg-paper-deep/55 px-1 py-px text-[8px] text-ink-ghost">
@@ -496,6 +493,11 @@ export function MainWindow({
   const { t } = useTranslation();
   const [notes, setNotes] = useState<NoteMetadata[]>([]);
   const [externalFiles, setExternalFiles] = useState<ExternalFile[]>([]);
+  const [externalFileMenu, setExternalFileMenu] = useState<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>(
@@ -1872,6 +1874,27 @@ export function MainWindow({
     }
   };
 
+  const handleAddExternalFile = async (id: string) => {
+    setExternalFileMenu(null);
+    const file = externalFilesRef.current.find((item) => item.id === id);
+    if (!file) return;
+    try {
+      if (!(await saveCurrentNote())) return;
+      const fileContent = await readExternalFile(file.filePath);
+      const note = await createNote({
+        title: file.title,
+        content: fileContent,
+        category: activeCategory,
+      });
+      replaceNoteMetadata(note);
+      setExternalFiles((files) => files.filter((item) => item.id !== id));
+      applyNote(note);
+      showToast("已加入花笺，原文件保留在原位置");
+    } catch (error) {
+      showToast(getErrorMessage(error));
+    }
+  };
+
   const handleSelectExternalFile = async (id: string) => {
     if (id === selectedId) return;
     setDeleteConfirm(false);
@@ -1930,14 +1953,15 @@ export function MainWindow({
     setDeleteConfirm(false);
     try {
       const target = notesRef.current.find((note) => note.id === noteId);
-      const deleteOriginal = target?.documentKind === "docx"
-        ? window.confirm(
-            t("main.confirm.deleteOriginalWord", {
-              defaultValue:
-                "是否同时删除保留的原始 Word？选择“取消”只保留原件，转换后的笔记仍会删除。",
-            }),
-          )
-        : true;
+      const deleteOriginal =
+        target?.documentKind === "docx"
+          ? window.confirm(
+              t("main.confirm.deleteOriginalWord", {
+                defaultValue:
+                  "是否同时删除保留的原始 Word？选择“取消”只保留原件，转换后的笔记仍会删除。",
+              }),
+            )
+          : true;
       await deleteNote(noteId, deleteOriginal);
       const remaining = await refreshNotes();
       if (noteId === selectedId && remaining[0]) {
@@ -2906,15 +2930,16 @@ export function MainWindow({
   const aboutButtonTitle = aboutUpdateReminder.hasPendingUpdate
     ? aboutButtonLabel
     : t("main.window.about", { defaultValue: "关于" });
-  const quickNotepadButtonTitle = selectedNote?.documentKind === "pdf"
-    ? t("main.window.pdfNotepadUnsupported", { defaultValue: "PDF 文档不支持快捷便签" })
-    : selectedNote
-      ? t("main.window.openCurrentAsNotepad", { defaultValue: "将当前笔记打开为快捷便签" })
-    : selectedExternalFile
-      ? t("main.window.externalNotepadUnsupported", {
-          defaultValue: "外部文件暂不支持快捷便签",
-        })
-      : t("main.window.selectNoteForNotepad", { defaultValue: "请先选择一篇笔记" });
+  const quickNotepadButtonTitle =
+    selectedNote?.documentKind === "pdf"
+      ? t("main.window.pdfNotepadUnsupported", { defaultValue: "PDF 文档不支持快捷便签" })
+      : selectedNote
+        ? t("main.window.openCurrentAsNotepad", { defaultValue: "将当前笔记打开为快捷便签" })
+        : selectedExternalFile
+          ? t("main.window.externalNotepadUnsupported", {
+              defaultValue: "外部文件暂不支持快捷便签",
+            })
+          : t("main.window.selectNoteForNotepad", { defaultValue: "请先选择一篇笔记" });
   const manualSyncButtonTitle =
     manualSyncState === "syncing"
       ? t("main.window.manualSyncing", { defaultValue: "正在同步…" })
@@ -3037,7 +3062,17 @@ export function MainWindow({
               title="工作足迹"
               aria-label="打开工作足迹"
             >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
                 <rect x="3.5" y="5" width="17" height="15" rx="2" />
                 <path d="M7.5 3v4M16.5 3v4M7.5 10h9M8 14h.01M12 14h.01M16 14h.01" />
               </svg>
@@ -3394,6 +3429,14 @@ export function MainWindow({
                         return (
                           <button
                             key={file.id}
+                            onContextMenu={(event) => {
+                              event.preventDefault();
+                              setExternalFileMenu({
+                                id: file.id,
+                                x: Math.min(event.clientX, window.innerWidth - 190),
+                                y: Math.min(event.clientY, window.innerHeight - 70),
+                              });
+                            }}
                             onClick={() => void handleSelectExternalFile(file.id)}
                             onMouseEnter={() => setHoveredId(file.id)}
                             onMouseLeave={() => setHoveredId(null)}
@@ -3549,35 +3592,35 @@ export function MainWindow({
                                   <DocumentTypeBadges note={note} />
                                   <div className="flex shrink-0 items-center gap-1">
                                     {note.documentKind !== "pdf" && (
-                                    <button
-                                      type="button"
-                                      onClick={(event) => {
-                                        event.preventDefault();
-                                        event.stopPropagation();
-                                        void handleOpenNoteAsNotepad(note.id);
-                                      }}
-                                      className="relative z-10 flex h-5 w-5 items-center justify-center rounded-md text-ink-ghost opacity-0 transition-all hover:bg-bamboo-mist hover:text-bamboo focus:opacity-100 group-hover:opacity-100"
-                                      title={t("noteMenu.openNotepad", {
-                                        defaultValue: "作为快捷便签打开",
-                                      })}
-                                      aria-label={t("noteMenu.openNotepad", {
-                                        defaultValue: "作为快捷便签打开",
-                                      })}
-                                    >
-                                      <svg
-                                        width="11"
-                                        height="11"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2.2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
+                                      <button
+                                        type="button"
+                                        onClick={(event) => {
+                                          event.preventDefault();
+                                          event.stopPropagation();
+                                          void handleOpenNoteAsNotepad(note.id);
+                                        }}
+                                        className="relative z-10 flex h-5 w-5 items-center justify-center rounded-md text-ink-ghost opacity-0 transition-all hover:bg-bamboo-mist hover:text-bamboo focus:opacity-100 group-hover:opacity-100"
+                                        title={t("noteMenu.openNotepad", {
+                                          defaultValue: "作为快捷便签打开",
+                                        })}
+                                        aria-label={t("noteMenu.openNotepad", {
+                                          defaultValue: "作为快捷便签打开",
+                                        })}
                                       >
-                                        <path d="M4 4h16v14H7l-3 3V4z" />
-                                        <path d="M8 9h8M8 13h5" />
-                                      </svg>
-                                    </button>
+                                        <svg
+                                          width="11"
+                                          height="11"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          strokeWidth="2.2"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        >
+                                          <path d="M4 4h16v14H7l-3 3V4z" />
+                                          <path d="M8 9h8M8 13h5" />
+                                        </svg>
+                                      </button>
                                     )}
                                     <span className="text-[10px] text-ink-ghost font-mono tabular-nums">
                                       {formatShortDate(note.updatedAt)}
@@ -3832,35 +3875,35 @@ export function MainWindow({
                                       <DocumentTypeBadges note={note} />
                                       <div className="flex shrink-0 items-center gap-1">
                                         {note.documentKind !== "pdf" && (
-                                        <button
-                                          type="button"
-                                          onClick={(event) => {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            void handleOpenNoteAsNotepad(note.id);
-                                          }}
-                                          className="relative z-10 flex h-5 w-5 items-center justify-center rounded-md text-ink-ghost opacity-0 transition-all hover:bg-bamboo-mist hover:text-bamboo focus:opacity-100 group-hover:opacity-100"
-                                          title={t("noteMenu.openNotepad", {
-                                            defaultValue: "作为快捷便签打开",
-                                          })}
-                                          aria-label={t("noteMenu.openNotepad", {
-                                            defaultValue: "作为快捷便签打开",
-                                          })}
-                                        >
-                                          <svg
-                                            width="11"
-                                            height="11"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2.2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
+                                          <button
+                                            type="button"
+                                            onClick={(event) => {
+                                              event.preventDefault();
+                                              event.stopPropagation();
+                                              void handleOpenNoteAsNotepad(note.id);
+                                            }}
+                                            className="relative z-10 flex h-5 w-5 items-center justify-center rounded-md text-ink-ghost opacity-0 transition-all hover:bg-bamboo-mist hover:text-bamboo focus:opacity-100 group-hover:opacity-100"
+                                            title={t("noteMenu.openNotepad", {
+                                              defaultValue: "作为快捷便签打开",
+                                            })}
+                                            aria-label={t("noteMenu.openNotepad", {
+                                              defaultValue: "作为快捷便签打开",
+                                            })}
                                           >
-                                            <path d="M4 4h16v14H7l-3 3V4z" />
-                                            <path d="M8 9h8M8 13h5" />
-                                          </svg>
-                                        </button>
+                                            <svg
+                                              width="11"
+                                              height="11"
+                                              viewBox="0 0 24 24"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              strokeWidth="2.2"
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                            >
+                                              <path d="M4 4h16v14H7l-3 3V4z" />
+                                              <path d="M8 9h8M8 13h5" />
+                                            </svg>
+                                          </button>
                                         )}
                                         <span className="text-[10px] text-ink-ghost font-mono tabular-nums">
                                           {formatShortDate(note.updatedAt)}
@@ -4216,208 +4259,213 @@ export function MainWindow({
               </div>
             ) : (
               <>
-            <div className="flex h-8 w-full max-w-full min-w-0 shrink-0 items-center overflow-hidden border-b border-paper-deep/20 bg-paper/10 px-5">
-              <span className="text-[10px] font-medium tracking-[0.12em] text-ink-ghost">
-                {t("main.editor.contentLabel", { defaultValue: "内容编辑" })}
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={viewMode === "content-source"}
-                onClick={() =>
-                  setViewMode(viewMode === "content-source" ? "content" : "content-source")
-                }
-                className="ml-4 flex shrink-0 items-center gap-2 rounded-lg px-2 py-1 text-[10px] text-ink-faint hover:bg-paper-warm cursor-pointer transition-colors"
-              >
-                <span
-                  className={`relative h-4 w-7 rounded-full transition-colors ${
-                    viewMode === "content-source" ? "bg-bamboo" : "bg-paper-deep"
-                  }`}
-                  aria-hidden="true"
-                >
-                  <span
-                    className={`absolute left-0.5 top-0.5 h-3 w-3 rounded-full bg-white shadow-sm transition-transform ${
-                      viewMode === "content-source" ? "translate-x-3" : "translate-x-0"
-                    }`}
-                  />
-                </span>
-                <span className="whitespace-nowrap">
-                  {t("main.editor.showSource", { defaultValue: "显示 Markdown 源码" })}
-                </span>
-              </button>
-            </div>
-
-            <div
-              key={viewMode}
-              ref={splitContainerRef}
-              className="relative flex-1 flex min-h-0 animate-view-fade"
-            >
-              {!selectedId && !isLoading ? (
-                <div className="flex-1 flex items-center justify-center text-[13px] text-ink-ghost">
-                  {t("main.editor.emptyHint", { defaultValue: "选择或新建一篇笔记" })}
+                <div className="flex h-8 w-full max-w-full min-w-0 shrink-0 items-center overflow-hidden border-b border-paper-deep/20 bg-paper/10 px-5">
+                  <span className="text-[10px] font-medium tracking-[0.12em] text-ink-ghost">
+                    {t("main.editor.contentLabel", { defaultValue: "内容编辑" })}
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={viewMode === "content-source"}
+                    onClick={() =>
+                      setViewMode(viewMode === "content-source" ? "content" : "content-source")
+                    }
+                    className="ml-4 flex shrink-0 items-center gap-2 rounded-lg px-2 py-1 text-[10px] text-ink-faint hover:bg-paper-warm cursor-pointer transition-colors"
+                  >
+                    <span
+                      className={`relative h-4 w-7 rounded-full transition-colors ${
+                        viewMode === "content-source" ? "bg-bamboo" : "bg-paper-deep"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <span
+                        className={`absolute left-0.5 top-0.5 h-3 w-3 rounded-full bg-white shadow-sm transition-transform ${
+                          viewMode === "content-source" ? "translate-x-3" : "translate-x-0"
+                        }`}
+                      />
+                    </span>
+                    <span className="whitespace-nowrap">
+                      {t("main.editor.showSource", { defaultValue: "显示 Markdown 源码" })}
+                    </span>
+                  </button>
                 </div>
-              ) : (
-                <>
-                  {viewMode === "content-source" && (
-                    <div
-                      className="markdown-source-panel flex flex-col min-h-0 shrink-0"
-                      style={{ width: `${splitRatio * 100}%` }}
-                    >
-                      <div className="flex items-center gap-0.5 px-4 pt-2 pb-1 shrink-0 border-b border-paper-deep/20">
-                        <span className="mr-2 text-[10px] text-ink-ghost/70 font-mono tracking-wider uppercase">
-                          {t("main.editor.sourceLabel", { defaultValue: "Markdown 源码" })}
-                        </span>
-                        {toolbarButtons.map((button) => (
-                          <button
-                            key={button.label}
-                            title={button.title}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => {
-                              if (contentRef.current) {
-                                applyFormat(
-                                  contentRef.current,
-                                  button.action,
-                                  t,
-                                  setContent,
-                                  markDirty,
+
+                <div
+                  key={viewMode}
+                  ref={splitContainerRef}
+                  className="relative flex-1 flex min-h-0 animate-view-fade"
+                >
+                  {!selectedId && !isLoading ? (
+                    <div className="flex-1 flex items-center justify-center text-[13px] text-ink-ghost">
+                      {t("main.editor.emptyHint", { defaultValue: "选择或新建一篇笔记" })}
+                    </div>
+                  ) : (
+                    <>
+                      {viewMode === "content-source" && (
+                        <div
+                          className="markdown-source-panel flex flex-col min-h-0 shrink-0"
+                          style={{ width: `${splitRatio * 100}%` }}
+                        >
+                          <div className="flex items-center gap-0.5 px-4 pt-2 pb-1 shrink-0 border-b border-paper-deep/20">
+                            <span className="mr-2 text-[10px] text-ink-ghost/70 font-mono tracking-wider uppercase">
+                              {t("main.editor.sourceLabel", { defaultValue: "Markdown 源码" })}
+                            </span>
+                            {toolbarButtons.map((button) => (
+                              <button
+                                key={button.label}
+                                title={button.title}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => {
+                                  if (contentRef.current) {
+                                    applyFormat(
+                                      contentRef.current,
+                                      button.action,
+                                      t,
+                                      setContent,
+                                      markDirty,
+                                    );
+                                  }
+                                }}
+                                className={`w-6 h-6 flex items-center justify-center rounded text-[11px] text-ink-ghost hover:text-ink-faint hover:bg-paper-warm transition-all cursor-pointer ${button.style}`}
+                              >
+                                {button.label}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="flex-1 overflow-hidden px-5 pb-4">
+                            <textarea
+                              ref={contentRef}
+                              data-tab-indent="true"
+                              value={content}
+                              onChange={(event) => {
+                                setContent(event.target.value);
+                                setEditorSelectionStats(
+                                  getTextEditorSelectionStats(
+                                    event.target.value,
+                                    event.target.selectionStart,
+                                    event.target.selectionEnd,
+                                  ),
                                 );
-                              }
+                                markDirty();
+                              }}
+                              onSelect={(event) => {
+                                updateSourceEditorStats(event.currentTarget);
+                              }}
+                              onClick={(event) => updateSourceEditorStats(event.currentTarget)}
+                              onKeyUp={(event) => updateSourceEditorStats(event.currentTarget)}
+                              onMouseUp={(event) => updateSourceEditorStats(event.currentTarget)}
+                              onPaste={imagePasteHandler}
+                              onDrop={imageDropHandler}
+                              onDragOver={imageDragOverHandler}
+                              onScroll={handleEditorScroll}
+                              className="w-full h-full leading-[1.9] text-ink-soft font-body placeholder:text-ink-ghost/40"
+                              style={{
+                                fontSize: `${settingsConfig?.fontSize ?? 14}px`,
+                                tabSize: `var(--tab-indent-size, 2)`,
+                              }}
+                              placeholder={t("main.editor.contentPlaceholder", {
+                                defaultValue: "开始写作……",
+                              })}
+                              spellCheck={false}
+                              disabled={!selectedId}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {viewMode === "content-source" && (
+                        <div
+                          className={`w-1.5 shrink-0 cursor-col-resize group relative flex items-center justify-center ${isResizingSplit ? "bg-bamboo/30" : "hover:bg-bamboo/20"} transition-colors`}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setIsResizingSplit(true);
+                          }}
+                        >
+                          <div
+                            className={`absolute inset-y-0 -left-1.5 -right-1.5 ${isResizingSplit ? "" : "group-hover:bg-bamboo/5"}`}
+                          />
+                          {/* 拖拽手柄指示器 */}
+                          <div className="relative z-10 flex flex-col gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="w-[3px] h-[3px] rounded-full bg-ink-ghost/60" />
+                            <div className="w-[3px] h-[3px] rounded-full bg-ink-ghost/60" />
+                            <div className="w-[3px] h-[3px] rounded-full bg-ink-ghost/60" />
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="paper-margin-layout flex min-h-0 min-w-0 flex-1">
+                        <div
+                          ref={previewScrollRef}
+                          className="min-w-0 flex-1 min-h-0 overflow-hidden"
+                        >
+                          <MarkdownContentEditor
+                            key={`${selectedId ?? "empty"}:${noteTransitionKey}`}
+                            editorRef={richEditorRef}
+                            content={content}
+                            fontSize={settingsConfig?.fontSize ?? 14}
+                            imageBaseDir={imageBaseDir ?? undefined}
+                            imageUploadHandler={
+                              isExternal ? undefined : handleRichEditorImageUpload
+                            }
+                            placeholder={t("main.editor.contentPlaceholder", {
+                              defaultValue: "开始写作……输入 ## 加空格可创建二级标题",
+                            })}
+                            disabled={!selectedId}
+                            onChange={(nextContent) => {
+                              setContent(nextContent);
+                              markDirty();
                             }}
-                            className={`w-6 h-6 flex items-center justify-center rounded text-[11px] text-ink-ghost hover:text-ink-faint hover:bg-paper-warm transition-all cursor-pointer ${button.style}`}
-                          >
-                            {button.label}
-                          </button>
-                        ))}
+                            onSelectionChange={(stats) =>
+                              setEditorSelectionStats({
+                                ...stats,
+                                currentLine: Math.min(stats.currentLine, lineCount),
+                              })
+                            }
+                            onError={() =>
+                              showToast(
+                                t("main.editor.richEditorError", {
+                                  defaultValue:
+                                    "这段 Markdown 暂时无法在内容编辑中显示，请打开源码面板修改。",
+                                }),
+                              )
+                            }
+                          />
+                        </div>
+                        {viewMode === "content" && (
+                          <PaperMarginPanel
+                            content={content}
+                            noteKey={selectedId}
+                            lineCount={lineCount}
+                            characterCount={charCount}
+                            onHeadingClick={handleOutlineHeadingClick}
+                          />
+                        )}
                       </div>
-
-                      <div className="flex-1 overflow-hidden px-5 pb-4">
-                        <textarea
-                          ref={contentRef}
-                          data-tab-indent="true"
-                          value={content}
-                          onChange={(event) => {
-                            setContent(event.target.value);
-                            setEditorSelectionStats(
-                              getTextEditorSelectionStats(
-                                event.target.value,
-                                event.target.selectionStart,
-                                event.target.selectionEnd,
+                      {(settingsConfig?.fontSize ?? DEFAULT_EDITOR_FONT_SIZE) !==
+                        DEFAULT_EDITOR_FONT_SIZE && (
+                        <div className="markdown-zoom-badge editor-zoom-badge">
+                          <span>
+                            {t("main.editor.textZoom", {
+                              percent: Math.round(
+                                ((settingsConfig?.fontSize ?? DEFAULT_EDITOR_FONT_SIZE) /
+                                  DEFAULT_EDITOR_FONT_SIZE) *
+                                  100,
                               ),
-                            );
-                            markDirty();
-                          }}
-                          onSelect={(event) => {
-                            updateSourceEditorStats(event.currentTarget);
-                          }}
-                          onClick={(event) => updateSourceEditorStats(event.currentTarget)}
-                          onKeyUp={(event) => updateSourceEditorStats(event.currentTarget)}
-                          onMouseUp={(event) => updateSourceEditorStats(event.currentTarget)}
-                          onPaste={imagePasteHandler}
-                          onDrop={imageDropHandler}
-                          onDragOver={imageDragOverHandler}
-                          onScroll={handleEditorScroll}
-                          className="w-full h-full leading-[1.9] text-ink-soft font-body placeholder:text-ink-ghost/40"
-                          style={{
-                            fontSize: `${settingsConfig?.fontSize ?? 14}px`,
-                            tabSize: `var(--tab-indent-size, 2)`,
-                          }}
-                          placeholder={t("main.editor.contentPlaceholder", {
-                            defaultValue: "开始写作……",
-                          })}
-                          spellCheck={false}
-                          disabled={!selectedId}
-                        />
-                      </div>
-                    </div>
+                              defaultValue: "正文 {{percent}}%",
+                            })}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setEditorFontSize(DEFAULT_EDITOR_FONT_SIZE)}
+                          >
+                            {t("common.reset", { defaultValue: "恢复默认" })}
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
-
-                  {viewMode === "content-source" && (
-                    <div
-                      className={`w-1.5 shrink-0 cursor-col-resize group relative flex items-center justify-center ${isResizingSplit ? "bg-bamboo/30" : "hover:bg-bamboo/20"} transition-colors`}
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        setIsResizingSplit(true);
-                      }}
-                    >
-                      <div
-                        className={`absolute inset-y-0 -left-1.5 -right-1.5 ${isResizingSplit ? "" : "group-hover:bg-bamboo/5"}`}
-                      />
-                      {/* 拖拽手柄指示器 */}
-                      <div className="relative z-10 flex flex-col gap-[3px] opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-[3px] h-[3px] rounded-full bg-ink-ghost/60" />
-                        <div className="w-[3px] h-[3px] rounded-full bg-ink-ghost/60" />
-                        <div className="w-[3px] h-[3px] rounded-full bg-ink-ghost/60" />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="paper-margin-layout flex min-h-0 min-w-0 flex-1">
-                    <div ref={previewScrollRef} className="min-w-0 flex-1 min-h-0 overflow-hidden">
-                      <MarkdownContentEditor
-                        key={`${selectedId ?? "empty"}:${noteTransitionKey}`}
-                        editorRef={richEditorRef}
-                        content={content}
-                        fontSize={settingsConfig?.fontSize ?? 14}
-                        imageBaseDir={imageBaseDir ?? undefined}
-                        imageUploadHandler={isExternal ? undefined : handleRichEditorImageUpload}
-                        placeholder={t("main.editor.contentPlaceholder", {
-                          defaultValue: "开始写作……输入 ## 加空格可创建二级标题",
-                        })}
-                        disabled={!selectedId}
-                        onChange={(nextContent) => {
-                          setContent(nextContent);
-                          markDirty();
-                        }}
-                        onSelectionChange={(stats) =>
-                          setEditorSelectionStats({
-                            ...stats,
-                            currentLine: Math.min(stats.currentLine, lineCount),
-                          })
-                        }
-                        onError={() =>
-                          showToast(
-                            t("main.editor.richEditorError", {
-                              defaultValue:
-                                "这段 Markdown 暂时无法在内容编辑中显示，请打开源码面板修改。",
-                            }),
-                          )
-                        }
-                      />
-                    </div>
-                    {viewMode === "content" && (
-                      <PaperMarginPanel
-                        content={content}
-                        noteKey={selectedId}
-                        lineCount={lineCount}
-                        characterCount={charCount}
-                        onHeadingClick={handleOutlineHeadingClick}
-                      />
-                    )}
-                  </div>
-                  {(settingsConfig?.fontSize ?? DEFAULT_EDITOR_FONT_SIZE) !==
-                    DEFAULT_EDITOR_FONT_SIZE && (
-                    <div className="markdown-zoom-badge editor-zoom-badge">
-                      <span>
-                        {t("main.editor.textZoom", {
-                          percent: Math.round(
-                            ((settingsConfig?.fontSize ?? DEFAULT_EDITOR_FONT_SIZE) /
-                              DEFAULT_EDITOR_FONT_SIZE) *
-                              100,
-                          ),
-                          defaultValue: "正文 {{percent}}%",
-                        })}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setEditorFontSize(DEFAULT_EDITOR_FONT_SIZE)}
-                      >
-                        {t("common.reset", { defaultValue: "恢复默认" })}
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+                </div>
               </>
             )}
 
@@ -4486,7 +4534,14 @@ export function MainWindow({
             </div>
           </div>
           {visibleSidePanel && settingsOverlay && (
-            <div className="absolute inset-0 z-20" onClick={() => { setSettingsOpen(false); setAboutOpen(false); setActivityOpen(false); }} />
+            <div
+              className="absolute inset-0 z-20"
+              onClick={() => {
+                setSettingsOpen(false);
+                setAboutOpen(false);
+                setActivityOpen(false);
+              }}
+            />
           )}
           <div
             data-testid="side-panel-host"
@@ -4503,7 +4558,11 @@ export function MainWindow({
               <ActivityPanel
                 onClose={handleCloseActivity}
                 onCreateReport={async (reportTitle, reportContent) => {
-                  const note = await createNote({ title: reportTitle, content: reportContent, category: "" });
+                  const note = await createNote({
+                    title: reportTitle,
+                    content: reportContent,
+                    category: "",
+                  });
                   replaceNoteMetadata(note);
                 }}
               />
@@ -4521,6 +4580,32 @@ export function MainWindow({
           </div>
         </div>
       </div>
+      {externalFileMenu && (
+        <div
+          className="fixed inset-0 z-[9999]"
+          onClick={() => setExternalFileMenu(null)}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            setExternalFileMenu(null);
+          }}
+        >
+          <button
+            autoFocus
+            type="button"
+            className="fixed rounded-lg border border-paper-deep/50 bg-cloud px-4 py-2 text-[12px] text-ink-soft shadow-lg"
+            style={{ left: externalFileMenu.x, top: externalFileMenu.y }}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setExternalFileMenu(null);
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              void handleAddExternalFile(externalFileMenu.id);
+            }}
+          >
+            加入花笺
+          </button>
+        </div>
+      )}
       {noteMenu && noteMenuTarget && (
         <div
           ref={noteMenuRef}

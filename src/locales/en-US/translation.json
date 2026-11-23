@@ -508,7 +508,7 @@
       },
       "confirmInstall": "The app will save open content, close, install the update, and reopen when it is done. Continue?",
       "confirmInstallLinux": "The app will save open content and then open Ubuntu's system installer. Continue?",
-      "download": "Download Update",
+      "download": "Download and Install Update",
       "downloaded": "Version {{version}} has finished downloading",
       "interval": {
         "custom": "{{hours}} hours",

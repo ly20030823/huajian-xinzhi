@@ -485,7 +485,7 @@
       },
       "confirmInstall": "應用會先儲存所有未儲存內容，然後關閉、安裝更新，並在完成後重新打開。是否繼續？",
       "confirmInstallLinux": "應用會先儲存所有未儲存內容，然後開啟 Ubuntu 系統安裝器。是否繼續？",
-      "download": "下載更新",
+      "download": "自動下載並安裝更新",
       "downloaded": "版本 {{version}} 已下載完成",
       "interval": {
         "custom": "{{hours}} 小時",

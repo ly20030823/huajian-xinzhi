@@ -3,6 +3,9 @@ import { describe, expect, test, vi } from "vitest";
 import { deriveDownloadProgressState, UpdateSettingsSection } from "./UpdateSettingsSection";
 import type { UpdateSettings, UpdateState } from "./types";
 
+// These fixtures describe macOS assets; do not inherit Node's host navigator.
+vi.stubGlobal("navigator", { platform: "MacIntel", userAgent: "test" });
+
 vi.mock("@tauri-apps/plugin-dialog", () => ({
   message: vi.fn(),
 }));
@@ -142,7 +145,7 @@ describe("UpdateSettingsSection", () => {
       />,
     );
 
-    expect(markup).toContain("下载更新");
+    expect(markup).toContain("自动下载安装更新");
     expect(markup).not.toContain("安装并重启");
     expect(markup).not.toContain("重新尝试安装");
   });
