@@ -57,7 +57,7 @@ describe("UpdateSettingsSection", () => {
     expect(markup).toContain("检查更新");
     expect(markup).toContain("更新来源：ly20030823/huajian-xinzhi");
     expect(markup).toContain("待更新版本：1.0.5");
-    expect(markup).toContain("下载更新");
+    expect(markup).toContain("自动下载安装更新");
     expect(markup).not.toContain("自动检查更新");
     expect(markup).not.toContain("Mirror酱");
   });

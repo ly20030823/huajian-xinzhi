@@ -254,6 +254,14 @@ where
             .as_deref()
             .map(PathBuf::from)
             .ok_or_else(|| errors::app_error("updateInstallNotReady", "当前没有可安装的更新包"))?;
+        // Older downloaders used the opaque redirect ID as the filename.
+        let installer_path = asset_path.with_file_name(format!("update-{}.deb", uuid::Uuid::new_v4()));
+        let asset_path = if asset_path.extension().and_then(|value| value.to_str()) != Some("deb") {
+            fs::copy(&asset_path, &installer_path)?;
+            installer_path
+        } else {
+            asset_path
+        };
         validate_linux_deb_asset(&asset_path, &current_state)?;
 
         if self.helper_mode == helper::UpdateHelperMode::Test {
@@ -460,7 +468,7 @@ fn validate_linux_deb_asset(path: &Path, current_state: &UpdateStateDto) -> Resu
         .is_some_and(|extension| extension.eq_ignore_ascii_case("deb"))
     {
         return Err(errors::app_error(
-            "updateInstallUnsupportedKind",
+            "updateLinuxInvalidPackage",
             "下载的更新包不是有效的 Debian 安装包",
         ));
     }

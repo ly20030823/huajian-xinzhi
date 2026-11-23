@@ -886,16 +886,9 @@ fn sanitize_url(url: &Url) -> String {
     )
 }
 
-fn resolved_final_path(plan: &DownloadPlan, effective_url: &Url) -> PathBuf {
-    let filename = effective_url
-        .path_segments()
-        .and_then(|mut segments| segments.next_back())
-        .filter(|name| !name.is_empty())
-        .unwrap_or(&plan.asset_name);
-    plan.final_path
-        .parent()
-        .unwrap_or_else(|| Path::new("."))
-        .join(filename)
+fn resolved_final_path(plan: &DownloadPlan, _effective_url: &Url) -> PathBuf {
+    // Signed GitHub asset URLs end in opaque IDs, not the release filename.
+    plan.final_path.clone()
 }
 
 fn part_path_for(final_path: &Path) -> PathBuf {
@@ -1225,6 +1218,14 @@ mod tests {
             part_path: version_dir.join(format!("{name}.part")),
             sha256_verification_enabled: true,
         }
+    }
+
+    #[test]
+    fn redirect_id_does_not_replace_release_filename() {
+        let paths = UpdatePaths::new(std::env::temp_dir().join("redirect-name-test"));
+        let plan = test_plan(&paths, "huajian-xinzhi_1.1.6_amd64.deb", b"deb", "https://github.com/example/release.deb");
+        let redirected = Url::parse("https://release-assets.githubusercontent.com/assets/opaque-id?token=example").unwrap();
+        assert_eq!(resolved_final_path(&plan, &redirected), plan.final_path);
     }
 
     fn test_platform(os: Os, arch: Arch, install_kind: InstallKind) -> PlatformInfo {

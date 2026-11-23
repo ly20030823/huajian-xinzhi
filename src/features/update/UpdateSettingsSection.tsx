@@ -399,16 +399,18 @@ export function UpdateSettingsSection({
   };
 
   const handleDownload = async () => {
+    if (!window.confirm(isLinuxDesktop()
+      ? "下载并校验更新后，将自动打开 Ubuntu 系统安装器。安装时需要系统授权，是否继续？"
+      : "下载并校验更新后，将自动保存内容、安装更新并重启。是否继续？")) return;
     setBusyAction("download");
     setNotice(null);
     try {
-      const result = await downloadUpdate(status?.source ?? undefined);
+      await downloadUpdate(status?.source ?? undefined);
+      setBusyAction("install");
+      const result = await installUpdate();
       setNotice({
         tone: "success",
-        text: t("settings.update.downloaded", {
-          version: result.version ?? status?.latestVersion ?? "--",
-          defaultValue: "版本 {{version}} 已下载完成",
-        }),
+        text: getInstallSuccessMessage(result, t),
       });
     } catch (error) {
       const message = getUpdateErrorMessage(error, t);
@@ -851,7 +853,7 @@ function renderDownloadCard({
             onClick={onDownload}
             className="h-8 px-3 rounded-lg bg-bamboo text-[11px] text-paper hover:bg-bamboo-light transition-colors cursor-pointer"
           >
-            {t("settings.update.download", { defaultValue: "下载更新" })}
+            {t("settings.update.downloadAndInstall", { defaultValue: "自动下载安装更新" })}
           </button>
         ) : null}
         {canCancel ? (
